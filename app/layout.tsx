@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
-import { ModeToggle } from "@/components/mode-toggle";
 import Header from "@/components/commerce/header";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -26,7 +25,7 @@ export default function RootLayout({
 					enableSystem
 					disableTransitionOnChange
 				>
-          <Header />
+					<Header />
 					{children}
 				</ThemeProvider>
 			</body>

@@ -11,7 +11,5 @@ export const getVariantValueSwatch = (product, variationValue) => {
             return colorValues.some(({value}) => value === variationValue)
         })
 
-        console.log(imageGroup);
-
     return imageGroup?.images?.[0]
 }

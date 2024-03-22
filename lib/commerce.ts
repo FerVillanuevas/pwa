@@ -1,8 +1,9 @@
 import { ShopperLogin } from "commerce-sdk/dist/customer/customer";
 import { SignJWT, jwtVerify } from "jose";
+import { RequestCookies, ResponseCookies } from "next/dist/compiled/@edge-runtime/cookies";
 
-import { cookies } from "next/headers";
-import { NextResponse, type NextRequest } from "next/server";
+import { cookies, headers } from "next/headers";
+import { NextResponse, NextRequest } from "next/server";
 
 const CLIENT_ID = "da422690-7800-41d1-8ee4-3ce983961078";
 const CLIENT_SECRET = "D*HHUrgO2%qADp2JTIUi";
@@ -44,6 +45,31 @@ export async function getSession() {
 	return await decrypt(session);
 }
 
+
+/**
+ * Copy cookies from the Set-Cookie header of the response to the Cookie header of the request,
+ * so that it will appear to SSR/RSC as if the user already has the new cookies.
+ */
+export function applySetCookie(req: NextRequest, res: NextResponse): void {
+	// parse the outgoing Set-Cookie header
+	const setCookies = new ResponseCookies(res.headers);
+	// Build a new Cookie header for the request by adding the setCookies
+	const newReqHeaders = new Headers(req.headers);
+	const newReqCookies = new RequestCookies(newReqHeaders);
+
+	for (const cookie of setCookies.getAll()) {
+		newReqCookies.set(cookie)
+	}
+
+	NextResponse.next({
+	  request: { headers: newReqHeaders },
+	}).headers.forEach((value, key) => {
+	  if (key === 'x-middleware-override-headers' || key.startsWith('x-middleware-request-')) {
+		res.headers.set(key, value);
+	  }
+	});
+  }
+
 export async function getGuestUserAuthToken(request: NextRequest) {
 	const response = NextResponse.next();
 	const session = request.cookies.get("session")?.value;
@@ -76,6 +102,8 @@ export async function getGuestUserAuthToken(request: NextRequest) {
 		httpOnly: true,
 		expires: exp
 	});
+
+	applySetCookie(request, response);
 
 	return response;
 }

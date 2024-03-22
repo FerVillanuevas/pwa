@@ -1,4 +1,3 @@
-import { ModeToggle } from "@/components/mode-toggle";
 import {
 	Card,
 	CardContent,
@@ -9,8 +8,11 @@ import {
 import { getSession, config } from "@/lib/commerce";
 import { Search } from "commerce-sdk";
 import Link from "next/link";
+import type { NextRequest } from "next/server";
 
-export default async function Home() {
+export default async function Home({request}: {
+	request: NextRequest
+}) {
 	const token = await getSession();
 	const searchClient = new Search.ShopperSearch({
 		...config,

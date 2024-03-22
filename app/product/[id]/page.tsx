@@ -23,10 +23,6 @@ export default async function Page({ params }: { params: { id: string } }) {
 		parameters: { id: params.id, allImages: true },
 	});
 
-	const swatch = product.imageGroups?.find(
-		({ viewType }) => viewType === "swatch",
-	);
-
 	return (
 		<div className="bg-background py-6">
 			<div className="grid grid-cols-3 container gap-4">
@@ -36,11 +32,11 @@ export default async function Page({ params }: { params: { id: string } }) {
 							<CarouselContent>
 								{product.imageGroups?.[0].images.map((image) => {
 									return (
-										<CarouselItem>
+										<CarouselItem key={image.title}>
 											<img
 												className="w-full"
-												src={image.disBaseLink}
-												alt={image.alt}
+												src={image?.disBaseLink}
+												alt={image?.alt}
 											/>
 										</CarouselItem>
 									);
@@ -84,13 +80,11 @@ export default async function Page({ params }: { params: { id: string } }) {
 								return (
 									<div key={id} className="space-y-3">
 										<p className="capitalize">{id}</p>
-										<ul>
+										<ul className="flex gap-3">
 											{values?.map(({ name, orderable, value }) => {
 												const sw = getVariantValueSwatch(product, value);
-
-												return (
-													<li key={value}>
-														<img className="ring-2 aspect-square rounded-full w-10 cursor-pointer" src={sw?.disBaseLink} alt={sw.alt} />
+												return ( <li key={value}>
+														<img className="ring-2 aspect-square rounded-full w-10 cursor-pointer" src={sw?.disBaseLink} alt={sw?.alt} />
 													</li>
 												);
 											})}
