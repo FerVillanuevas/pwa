@@ -122,7 +122,8 @@ export async function getGuestUserAuthToken(request: NextRequest) {
 					Authorization: `Basic ${base64data}`,
 					"Content-Type": "application/x-www-form-urlencoded",
 				},
-				body: new URLSearchParams<any>({
+				//@ts-ignore
+				body: new URLSearchParams({
 					refresh_token: decryptToken.refresh_token,
 					grant_type: "refresh_token",
 				}),

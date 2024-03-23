@@ -6,8 +6,10 @@ import { Badge } from "../ui/badge";
 import type { ShopperBaskets } from "commerce-sdk/dist/checkout/checkout";
 
 export default async function Cart() {
-	let basket: ShopperBaskets.Basket;
+	let basket: ShopperBaskets.Basket | null = null;
 	const token = await getSession();
+
+	if(!token) return <div>error</div>;
 
 	const shopperCustomers = new Customer.ShopperCustomers({
 		...config,
@@ -18,6 +20,7 @@ export default async function Cart() {
 
 	const baskets = await shopperCustomers.getCustomerBaskets({
 		parameters: {
+			//@ts-ignore
 			customerId: token.customer_id,
 		},
 		next: { tags: ["basket"] },

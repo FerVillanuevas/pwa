@@ -235,8 +235,8 @@ export default async function Page({
 						action={async () => {
 							"use server";
 							variant && await addToCart(basket, {
-								productId: variant.productId,
-								price: variant.price || 0
+								productId: variant?.productId,
+								price: variant?.price || 0
 							});
 						}}
 					>

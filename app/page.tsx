@@ -8,13 +8,8 @@ import {
 import { getSession, config } from "@/lib/commerce";
 import { Search } from "commerce-sdk";
 import Link from "next/link";
-import type { NextRequest } from "next/server";
 
-export default async function Home({
-	request,
-}: {
-	request: NextRequest;
-}) {
+export default async function Home() {
 	const token = await getSession();
 	const searchClient = new Search.ShopperSearch({
 		...config,

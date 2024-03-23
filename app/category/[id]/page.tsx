@@ -13,6 +13,8 @@ import Link from "next/link";
 export default async function Page({ params }: { params: { id: string } }) {
 	const token = await getSession();
 
+	if(!token) return <div>Error</div>;
+
 	const shopperProducts = new Product.ShopperProducts({
 		...config,
 		headers: {

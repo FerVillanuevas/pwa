@@ -8,6 +8,8 @@ import Cart from "./Cart";
 export default async function Header() {
 	const token = await getSession();
 
+	if(!token) return <div>empty</div>;
+
 	const shopperProducts = new Product.ShopperProducts({
 		...config,
 		headers: {
@@ -26,6 +28,7 @@ export default async function Header() {
 
     const {data: subCategories} = await shopperProducts.getCategories({
         parameters: {
+			//@ts-ignore
             ids: ids?.join(),
             levels: 2
         }
