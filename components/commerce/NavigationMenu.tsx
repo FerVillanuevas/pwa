@@ -1,7 +1,5 @@
 "use client";
 
-import * as React from "react";
-
 import { cn } from "@/lib/utils";
 import {
 	NavigationMenu as NavigationMenuPrimary,
@@ -15,44 +13,7 @@ import {
 
 import type { Product } from "commerce-sdk";
 import Link from "next/link";
-
-const components: { title: string; href: string; description: string }[] = [
-	{
-		title: "Alert Dialog",
-		href: "/docs/primitives/alert-dialog",
-		description:
-			"A modal dialog that interrupts the user with important content and expects a response.",
-	},
-	{
-		title: "Hover Card",
-		href: "/docs/primitives/hover-card",
-		description:
-			"For sighted users to preview content available behind a link.",
-	},
-	{
-		title: "Progress",
-		href: "/docs/primitives/progress",
-		description:
-			"Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.",
-	},
-	{
-		title: "Scroll-area",
-		href: "/docs/primitives/scroll-area",
-		description: "Visually or semantically separates content.",
-	},
-	{
-		title: "Tabs",
-		href: "/docs/primitives/tabs",
-		description:
-			"A set of layered sections of content—known as tab panels—that are displayed one at a time.",
-	},
-	{
-		title: "Tooltip",
-		href: "/docs/primitives/tooltip",
-		description:
-			"A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
-	},
-];
+import { ComponentPropsWithoutRef, ElementRef, forwardRef } from "react";
 
 export function NavigationMenu({
 	categories,
@@ -87,7 +48,7 @@ export function NavigationMenu({
 							<NavigationMenuContent>
 								{category.c_slotBannerImage && (
 									<img
-										className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-2 no-underline outline-none focus:shadow-md"
+										className="flex h-full w-full select-none"
 										src={category.c_slotBannerImage}
 										alt={category.name}
 									/>
@@ -116,9 +77,9 @@ export function NavigationMenu({
 	);
 }
 
-const ListItem = React.forwardRef<
-	React.ElementRef<"a">,
-	React.ComponentPropsWithoutRef<"a">
+const ListItem = forwardRef<
+	ElementRef<"a">,
+	ComponentPropsWithoutRef<"a">
 >(({ className, title, children, ...props }, ref) => {
 	return (
 		<li>
