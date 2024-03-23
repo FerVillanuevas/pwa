@@ -1,3 +1,4 @@
+import SubmitButton from "@/components/commerce/SubmitButton";
 import {
 	Carousel,
 	CarouselContent,
@@ -7,10 +8,57 @@ import {
 } from "@/components/ui/carousel";
 import { config, getSession } from "@/lib/commerce";
 import { getVariantValueSwatch } from "@/lib/utils/commerce";
-import { Product } from "commerce-sdk";
+import { Checkout, Customer, Product } from "commerce-sdk";
+import { revalidateTag } from "next/cache";
+
+
+/* This is a server action! */
+
+const addToCart = async (basket: Checkout.ShopperBaskets.Basket, product: Product.ShopperProducts.Product) => {
+	const token = await getSession();
+
+	const shopperBaskets = new Checkout.ShopperBaskets({
+		...config,
+		headers: {
+			authorization: `Bearer ${token.access_token}`,
+		},
+	});
+
+	await shopperBaskets.addItemToBasket({
+		parameters: {
+			basketId: basket.basketId,
+		},
+		body: [
+			{
+				productId: product.id,
+				price: product.price,
+				quantity: 1,
+			},
+		],
+	});
+
+	/* This will revalidate the getBasket call, so it will update the cart Icon by consequence */
+	revalidateTag('basket')
+
+};
 
 export default async function Page({ params }: { params: { id: string } }) {
 	const token = await getSession();
+	let basket: Checkout.ShopperBaskets.Basket;
+
+	const shopperCustomers = new Customer.ShopperCustomers({
+		...config,
+		headers: {
+			authorization: `Bearer ${token.access_token}`,
+		},
+	});
+
+	const shopperBaskets = new Checkout.ShopperBaskets({
+		...config,
+		headers: {
+			authorization: `Bearer ${token.access_token}`,
+		},
+	});
 
 	const shopperProducts = new Product.ShopperProducts({
 		...config,
@@ -23,6 +71,27 @@ export default async function Page({ params }: { params: { id: string } }) {
 		parameters: { id: params.id, allImages: true },
 	});
 
+
+	const baskets = await shopperCustomers.getCustomerBaskets({
+		parameters: {
+			customerId: token.customer_id
+		}
+	})
+
+	if(baskets.total === 0 ) {
+		basket = await shopperBaskets.createBasket({
+			body: {
+				customerInfo: {
+					email: '',
+					customerId: token.customer_id
+				}
+			}
+		})
+		console.log(basket);
+	} else {
+		basket = baskets.baskets![0];
+	}
+
 	return (
 		<div className="bg-background py-6">
 			<div className="grid grid-cols-3 container gap-4">
@@ -30,9 +99,9 @@ export default async function Page({ params }: { params: { id: string } }) {
 					<div className="container w-full justify-center flex px-20">
 						<Carousel>
 							<CarouselContent>
-								{product.imageGroups?.[0].images.map((image) => {
+								{product.imageGroups?.[0].images.map((image, i) => {
 									return (
-										<CarouselItem key={image.title}>
+										<CarouselItem key={`${image.title}_${i}`}>
 											<img
 												className="w-full"
 												src={image?.disBaseLink}
@@ -83,8 +152,13 @@ export default async function Page({ params }: { params: { id: string } }) {
 										<ul className="flex gap-3">
 											{values?.map(({ name, orderable, value }) => {
 												const sw = getVariantValueSwatch(product, value);
-												return ( <li key={value}>
-														<img className="ring-2 aspect-square rounded-full w-10 cursor-pointer" src={sw?.disBaseLink} alt={sw?.alt} />
+												return (
+													<li key={value}>
+														<img
+															className="ring-2 aspect-square rounded-full w-10 cursor-pointer"
+															src={sw?.disBaseLink}
+															alt={sw?.alt}
+														/>
 													</li>
 												);
 											})}
@@ -98,7 +172,14 @@ export default async function Page({ params }: { params: { id: string } }) {
 									<p className="capitalize">{id}</p>
 									<ul className="flex gap-3">
 										{values?.map(({ name, orderable, value }) => {
-											return <li key={value} className="ring-2 w-10 aspect-square text-center flex items-center justify-center cursor-pointer">{value}</li>;
+											return (
+												<li
+													key={value}
+													className="ring-2 w-10 aspect-square text-center flex items-center justify-center cursor-pointer"
+												>
+													{value}
+												</li>
+											);
 										})}
 									</ul>
 								</div>
@@ -106,13 +187,15 @@ export default async function Page({ params }: { params: { id: string } }) {
 						})}
 					</div>
 
-					<form className="mt-10">
-						<button
-							type="submit"
+					<form className="mt-10" action={async () => {
+						'use server'
+						await addToCart(basket, product)
+					}}>
+						<SubmitButton
 							className="mt-10 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
 						>
 							Add to bag
-						</button>
+						</SubmitButton>
 					</form>
 				</div>
 			</div>

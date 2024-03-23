@@ -1,9 +1,11 @@
-import { ShopperLogin } from "commerce-sdk/dist/customer/customer";
-import { SignJWT, jwtVerify } from "jose";
-import { RequestCookies, ResponseCookies } from "next/dist/compiled/@edge-runtime/cookies";
+import { JWTPayload, SignJWT, jwtVerify } from "jose";
+import {
+	RequestCookies,
+	ResponseCookies,
+} from "next/dist/compiled/@edge-runtime/cookies";
 
-import { cookies, headers } from "next/headers";
-import { NextResponse, NextRequest } from "next/server";
+import { cookies } from "next/headers";
+import { NextResponse, type NextRequest } from "next/server";
 
 const CLIENT_ID = "da422690-7800-41d1-8ee4-3ce983961078";
 const CLIENT_SECRET = "D*HHUrgO2%qADp2JTIUi";
@@ -24,7 +26,7 @@ export const config = {
 
 const key = new TextEncoder().encode(process.env.SECRET_KEY);
 
-export async function encrypt(payload: any, expires: string | number | Date) {
+export async function encrypt(payload: JWTPayload | undefined, expires: string | number | Date) {
 	return await new SignJWT(payload)
 		.setProtectedHeader({ alg: "HS256" })
 		.setIssuedAt()
@@ -32,7 +34,7 @@ export async function encrypt(payload: any, expires: string | number | Date) {
 		.sign(key);
 }
 
-export async function decrypt(input: string): Promise<any> {
+export async function decrypt(input: string): Promise<JWTPayload> {
 	const { payload } = await jwtVerify(input, key, {
 		algorithms: ["HS256"],
 	});
@@ -44,7 +46,6 @@ export async function getSession() {
 	if (!session) return null;
 	return await decrypt(session);
 }
-
 
 /**
  * Copy cookies from the Set-Cookie header of the response to the Cookie header of the request,
@@ -58,21 +59,49 @@ export function applySetCookie(req: NextRequest, res: NextResponse): void {
 	const newReqCookies = new RequestCookies(newReqHeaders);
 
 	for (const cookie of setCookies.getAll()) {
-		newReqCookies.set(cookie)
+		newReqCookies.set(cookie);
 	}
 
 	NextResponse.next({
-	  request: { headers: newReqHeaders },
+		request: { headers: newReqHeaders },
 	}).headers.forEach((value, key) => {
-	  if (key === 'x-middleware-override-headers' || key.startsWith('x-middleware-request-')) {
-		res.headers.set(key, value);
-	  }
+		if (
+			key === "x-middleware-override-headers" ||
+			key.startsWith("x-middleware-request-")
+		) {
+			res.headers.set(key, value);
+		}
 	});
-  }
+}
+
+async function storeToken(token: JWTPayload, request: NextRequest, response: NextResponse) {
+	const exp = Date.now() + 1800 * 1000;
+	const expRefresh = Date.now() + 2592000 * 1000;
+
+	const encSession = await encrypt(token, exp);
+	const encRefresh = await encrypt(
+		{
+			refresh_token: token.refresh_token,
+			exp: 2592000,
+		},
+		expRefresh,
+	);
+
+	response.cookies.set("session", encSession, {
+		httpOnly: true,
+		expires: exp,
+	});
+
+	response.cookies.set("refreshToken", encRefresh, {
+		httpOnly: true,
+		expires: expRefresh,
+	});
+}
 
 export async function getGuestUserAuthToken(request: NextRequest) {
 	const response = NextResponse.next();
 	const session = request.cookies.get("session")?.value;
+	const refreshToken = request.cookies.get("refreshToken")?.value;
 
 	if (session) {
 		return response;
@@ -81,6 +110,33 @@ export async function getGuestUserAuthToken(request: NextRequest) {
 	const base64data = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString(
 		"base64",
 	);
+
+	if (refreshToken) {
+		const decryptToken = await decrypt(refreshToken);
+
+		const res = await fetch(
+			`https://${SHORT_CODE}.api.commercecloud.salesforce.com/shopper/auth/v1/organizations/${ORG_ID}/oauth2/token`,
+			{
+				method: "POST",
+				headers: {
+					Authorization: `Basic ${base64data}`,
+					"Content-Type": "application/x-www-form-urlencoded",
+				},
+				body: new URLSearchParams<any>({
+					refresh_token: decryptToken.refresh_token,
+					grant_type: "refresh_token",
+				}),
+			},
+		);
+
+		const token = await res.json();
+
+		await storeToken(token, request, response);
+
+		applySetCookie(request, response);
+
+		return response;
+	}
 
 	const res = await fetch(
 		`https://${SHORT_CODE}.api.commercecloud.salesforce.com/shopper/auth/v1/organizations/${ORG_ID}/oauth2/token`,
@@ -94,14 +150,9 @@ export async function getGuestUserAuthToken(request: NextRequest) {
 		},
 	);
 
-	const exp = Date.now() + 1800 * 1000
 	const token = await res.json();
-	const encSession = await encrypt(token, exp);
 
-	response.cookies.set("session", encSession, {
-		httpOnly: true,
-		expires: exp
-	});
+	await storeToken(token, request, response);
 
 	applySetCookie(request, response);
 

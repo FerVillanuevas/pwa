@@ -35,7 +35,7 @@ export function NavigationMenu({
 							<NavigationMenuItem key={category.id}>
 								<Link href={`/category/${category.id}`} legacyBehavior passHref>
 									<NavigationMenuLink className={navigationMenuTriggerStyle()}>
-									{category.id}
+									{category.name}
 									</NavigationMenuLink>
 								</Link>
 							</NavigationMenuItem>

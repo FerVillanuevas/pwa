@@ -3,6 +3,7 @@ import { ModeToggle } from "../mode-toggle";
 import Link from "./Link";
 import { Product } from "commerce-sdk";
 import { NavigationMenu } from "./NavigationMenu";
+import Cart from "./Cart";
 
 export default async function Header() {
 	const token = await getSession();
@@ -40,6 +41,7 @@ export default async function Header() {
 				</nav>
 
 				<div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+					<Cart />
 					<ModeToggle />
 				</div>
 			</div>

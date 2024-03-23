@@ -1,4 +1,3 @@
-import Refinament from "@/components/commerce/Refinament";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -61,9 +60,6 @@ export default async function Page({ params }: { params: { id: string } }) {
 			<section className="pt-6">
 				<div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-4 ">
 					<div>
-
-						
-
 						{categoryRefinament && (
 							<ul className="space-y-4 border-b pb-6 text-sm font-medium text-foreground">
 								{categoryRefinament.values?.map((value) => {
@@ -119,7 +115,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 							{products?.hits?.map((hit) => {
 								return (
 									<Link
-										href={`/product/${hit.productId}`}
+										href={`/product/${hit.representedProduct?.id}`}
 										key={hit.productId}
 										className="group"
 									>
