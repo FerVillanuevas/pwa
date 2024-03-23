@@ -14,7 +14,7 @@ export default function SubmitButton({ children, toastText, ...props }: any) {
         if(!pending) {
             toast(toastText || "Event has been created.")
         }
-    }, [pending])
+    }, [pending, toastText])
 
 	return <Button {...props} type="submit" aria-disabled={pending}>
         {pending && <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />} {children}

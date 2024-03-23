@@ -22,6 +22,7 @@ export default async function Page() {
 
 	const baskets = await shopperCustomers.getCustomerBaskets({
 		parameters: {
+			//@ts-ignore
 			customerId: token?.customer_id
 		},
 		next: { tags: ['basket'] }
@@ -32,6 +33,7 @@ export default async function Page() {
 			body: {
 				customerInfo: {
 					email: '',
+					//@ts-ignore
 					customerId: token?.customer_id
 				}
 			}

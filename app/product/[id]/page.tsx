@@ -32,6 +32,7 @@ const addToCart = async (
 
 	await shopperBaskets.addItemToBasket({
 		parameters: {
+			//@ts-ignore
 			basketId: basket.basketId,
 		},
 		body: [
@@ -83,6 +84,7 @@ export default async function Page({
 
 	const baskets = await shopperCustomers.getCustomerBaskets({
 		parameters: {
+			//@ts-ignore
 			customerId: token?.customer_id,
 		},
 	});
@@ -92,6 +94,7 @@ export default async function Page({
 			body: {
 				customerInfo: {
 					email: "",
+					//@ts-ignore
 					customerId: token?.customer_id,
 				},
 			},
@@ -102,7 +105,7 @@ export default async function Page({
 
 	const variant = product.variants?.find((variant) => {
 		return Object.keys(variant.variationValues || {}).every((key) => {
-			return searchParams[key] === variant.variationValues[key];
+			return searchParams[key] === variant.variationValues?.[key];
 		});
 	});
 
@@ -231,7 +234,10 @@ export default async function Page({
 						className="mt-10"
 						action={async () => {
 							"use server";
-							await addToCart(basket, variant);
+							variant && await addToCart(basket, {
+								productId: variant.productId,
+								price: variant.price || 0
+							});
 						}}
 					>
 						<SubmitButton toastText="Added to cart" className="mt-10 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
