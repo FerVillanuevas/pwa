@@ -19,15 +19,13 @@ export default async function Home({
 	const searchClient = new Search.ShopperSearch({
 		...config,
 		headers: {
-			authorization: `Bearer ${token.access_token}`,
+			authorization: `Bearer ${token?.access_token}`,
 		},
 	});
 
 	const searchResults = await searchClient.productSearch({
 		parameters: { q: "dress", limit: 8 },
 	});
-
-	console.log(token.customer_id);
 
 	return (
 		<main className="flex min-h-screen flex-col items-center justify-between p-24 container">
@@ -37,7 +35,7 @@ export default async function Home({
 						return (
 							<CarouselItem key={hit.productId} className="basis-1/4">
 								<Link
-									href={`/product/${hit.representedProduct?.id}`}
+									href={`/product/${hit.productId}`}
 									className="group"
 								>
 									<div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-h-8 xl:aspect-w-7">

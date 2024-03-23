@@ -115,7 +115,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 							{products?.hits?.map((hit) => {
 								return (
 									<Link
-										href={`/product/${hit.representedProduct?.id}`}
+										href={`/product/${hit.productId}`}
 										key={hit.productId}
 										className="group"
 									>

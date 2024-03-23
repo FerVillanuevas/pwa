@@ -10,17 +10,23 @@ import { config, getSession } from "@/lib/commerce";
 import { getVariantValueSwatch } from "@/lib/utils/commerce";
 import { Checkout, Customer, Product } from "commerce-sdk";
 import { revalidateTag } from "next/cache";
-
+import Link from "next/link";
 
 /* This is a server action! */
 
-const addToCart = async (basket: Checkout.ShopperBaskets.Basket, product: Product.ShopperProducts.Product) => {
+const addToCart = async (
+	basket: Checkout.ShopperBaskets.Basket | null,
+	product: { productId: string; price: number },
+) => {
+
+	if(!basket) return;
+
 	const token = await getSession();
 
 	const shopperBaskets = new Checkout.ShopperBaskets({
 		...config,
 		headers: {
-			authorization: `Bearer ${token.access_token}`,
+			authorization: `Bearer ${token?.access_token}`,
 		},
 	});
 
@@ -30,7 +36,7 @@ const addToCart = async (basket: Checkout.ShopperBaskets.Basket, product: Produc
 		},
 		body: [
 			{
-				productId: product.id,
+				productId: product.productId,
 				price: product.price,
 				quantity: 1,
 			},
@@ -38,59 +44,67 @@ const addToCart = async (basket: Checkout.ShopperBaskets.Basket, product: Produc
 	});
 
 	/* This will revalidate the getBasket call, so it will update the cart Icon by consequence */
-	revalidateTag('basket')
-
+	revalidateTag("basket");
 };
 
-export default async function Page({ params }: { params: { id: string } }) {
+export default async function Page({
+	params,
+	searchParams,
+}: { params: { id: string }; searchParams: any }) {
+	const { pid } = searchParams;
+
 	const token = await getSession();
-	let basket: Checkout.ShopperBaskets.Basket;
+	let basket: Checkout.ShopperBaskets.Basket | null;
 
 	const shopperCustomers = new Customer.ShopperCustomers({
 		...config,
 		headers: {
-			authorization: `Bearer ${token.access_token}`,
+			authorization: `Bearer ${token?.access_token}`,
 		},
 	});
 
 	const shopperBaskets = new Checkout.ShopperBaskets({
 		...config,
 		headers: {
-			authorization: `Bearer ${token.access_token}`,
+			authorization: `Bearer ${token?.access_token}`,
 		},
 	});
 
 	const shopperProducts = new Product.ShopperProducts({
 		...config,
 		headers: {
-			authorization: `Bearer ${token.access_token}`,
+			authorization: `Bearer ${token?.access_token}`,
 		},
 	});
 
 	const product = await shopperProducts.getProduct({
-		parameters: { id: params.id, allImages: true },
+		parameters: { id: pid || params.id, allImages: true },
 	});
-
 
 	const baskets = await shopperCustomers.getCustomerBaskets({
 		parameters: {
-			customerId: token.customer_id
-		}
-	})
+			customerId: token?.customer_id,
+		},
+	});
 
-	if(baskets.total === 0 ) {
+	if (baskets.total === 0) {
 		basket = await shopperBaskets.createBasket({
 			body: {
 				customerInfo: {
-					email: '',
-					customerId: token.customer_id
-				}
-			}
-		})
-		console.log(basket);
+					email: "",
+					customerId: token?.customer_id,
+				},
+			},
+		});
 	} else {
-		basket = baskets.baskets![0];
+		basket = baskets.baskets?.[0] || null;
 	}
+
+	const variant = product.variants?.find((variant) => {
+		return Object.keys(variant.variationValues || {}).every((key) => {
+			return searchParams[key] === variant.variationValues[key];
+		});
+	});
 
 	return (
 		<div className="bg-background py-6">
@@ -144,56 +158,83 @@ export default async function Page({ params }: { params: { id: string } }) {
 					</div>
 
 					<div className="mt-10 space-y-3">
-						{product.variationAttributes?.map(({ id, values }) => {
-							if (id === "color") {
+						{product.variationAttributes?.map((variationAttribute) => {
+							if (variationAttribute.id === "color") {
 								return (
-									<div key={id} className="space-y-3">
-										<p className="capitalize">{id}</p>
+									<div key={variationAttribute.id} className="space-y-3">
+										<p className="capitalize">{variationAttribute.id}</p>
 										<ul className="flex gap-3">
-											{values?.map(({ name, orderable, value }) => {
-												const sw = getVariantValueSwatch(product, value);
-												return (
-													<li key={value}>
-														<img
-															className="ring-2 aspect-square rounded-full w-10 cursor-pointer"
-															src={sw?.disBaseLink}
-															alt={sw?.alt}
-														/>
-													</li>
-												);
-											})}
+											{variationAttribute.values?.map(
+												({ name, orderable, value }) => {
+													const sw = getVariantValueSwatch(product, value);
+													return (
+														<li key={value}>
+															<Link
+																href={{
+																	pathname: `/product/${product.id}`,
+																	query: new URLSearchParams({
+																		...product.variationValues,
+																		...searchParams,
+																		[variationAttribute.id]: value,
+																	}).toString(),
+																}}
+															>
+																<img
+																	className="ring-2 aspect-square rounded-full w-10 cursor-pointer"
+																	src={sw?.disBaseLink}
+																	alt={sw?.alt}
+																/>
+															</Link>
+														</li>
+													);
+												},
+											)}
 										</ul>
 									</div>
 								);
 							}
 
 							return (
-								<div key={id} className="space-y-3">
-									<p className="capitalize">{id}</p>
+								<div key={variationAttribute.id} className="space-y-3">
+									<p className="capitalize">{variationAttribute.id}</p>
 									<ul className="flex gap-3">
-										{values?.map(({ name, orderable, value }) => {
-											return (
-												<li
-													key={value}
-													className="ring-2 w-10 aspect-square text-center flex items-center justify-center cursor-pointer"
-												>
-													{value}
-												</li>
-											);
-										})}
+										{variationAttribute.values?.map(
+											({ name, orderable, value }) => {
+												return (
+													<li
+														key={value}
+														className="ring-2 w-10 aspect-square text-center flex items-center justify-center cursor-pointer"
+													>
+														<Link
+															href={{
+																pathname: `/product/${product.id}`,
+																query: new URLSearchParams({
+																	...product.variationValues,
+																	...searchParams,
+																	[variationAttribute.id]: value,
+																}).toString(),
+															}}
+														>
+															{value}
+														</Link>
+													</li>
+												);
+											},
+										)}
 									</ul>
 								</div>
 							);
 						})}
 					</div>
 
-					<form className="mt-10" action={async () => {
-						'use server'
-						await addToCart(basket, product)
-					}}>
-						<SubmitButton
-							className="mt-10 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-						>
+					<form
+						className="mt-10"
+						action={async () => {
+							"use server";
+							await addToCart(basket, variant);
+						}}
+					>
+						<SubmitButton toastText="Added to cart" className="mt-10 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
 							Add to bag
 						</SubmitButton>
 					</form>
