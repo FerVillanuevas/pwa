@@ -53,7 +53,7 @@ export function NavigationMenu({
 										height={200}
 										className="flex h-full w-full select-none"
 										src={category.c_slotBannerImage}
-										alt={category.name}
+										alt={category.name || ''}
 									/>
 								)}
 								<ul className="grid gap-3 p-3 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">

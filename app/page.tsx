@@ -38,9 +38,9 @@ export default async function Home() {
 										<Image
 											width={200}
 											height={200}
-											src={hit.image?.disBaseLink}
+											src={hit.image?.disBaseLink || ''}
 											className="h-full w-full object-cover object-center group-hover:opacity-75"
-											alt={hit.image?.alt}
+											alt={hit.image?.alt || ''}
 										/>
 									</div>
 									<h3 className="mt-4 text-sm text-foreground">

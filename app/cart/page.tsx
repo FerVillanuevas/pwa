@@ -49,16 +49,18 @@ export default async function Page() {
 		basket = baskets.baskets?.[0] || null;
 	}
 
-	const products = await shopperProducts.getProducts({
+	const products = basket?.productItems ? await shopperProducts.getProducts({
 		parameters: {
 			ids: basket?.productItems?.map(({ productId }) => productId).join(),
 			allImages: true,
 		},
-	});
+	}) : [];
+
 
 	const findColorImage = (
-		fullProduct,
-		productItem,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		fullProduct: { imageGroups: any[]; variationAttributes: any[]; },
+		productItem: Checkout.ShopperBaskets.ProductItem,
 	): Product.ShopperProducts.Image | null => {
 		const images = fullProduct?.imageGroups?.filter(
 			({ viewType, variationAttributes }) =>
@@ -70,7 +72,9 @@ export default async function Page() {
 		)?.values?.[0].value;
 		const colorImages = images?.find(({ variationAttributes }) =>
 			variationAttributes?.find(
+				//@ts-ignore
 				({ id, values }) =>
+					//@ts-ignore
 					id === "color" && values?.find(({ value }) => value === color),
 			),
 		);
@@ -90,6 +94,7 @@ export default async function Page() {
 				<div className="col-span-4">
 					<ul className="divide-y py-4">
 						{basket?.productItems?.map((productItem) => {
+							//@ts-ignore
 							const fullProduct = products.data?.find(
 								({ id }: { id: string }) => id === productItem.productId,
 							);
@@ -99,8 +104,8 @@ export default async function Page() {
 									<div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border ">
 										{image && (
 											<Image
-												src={image.disBaseLink}
-												alt={image.alt}
+												src={image.disBaseLink || ''}
+												alt={image.alt || ''}
 												width={100}
 												height={100}
 											/>

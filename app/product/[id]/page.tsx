@@ -125,8 +125,8 @@ export default async function Page({
 												width={500}
 												height={500}
 												className="w-full"
-												src={image?.disBaseLink}
-												alt={image?.alt}
+												src={image?.disBaseLink || ''}
+												alt={image?.alt || ''}
 											/>
 										</CarouselItem>
 									);
