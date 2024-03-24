@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/carousel";
 import { getSession, config } from "@/lib/commerce";
 import { Search } from "commerce-sdk";
+import Image from "next/image";
 import Link from "next/link";
 
 export default async function Home() {
@@ -34,7 +35,9 @@ export default async function Home() {
 									className="group"
 								>
 									<div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-h-8 xl:aspect-w-7">
-										<img
+										<Image
+											width={200}
+											height={200}
 											src={hit.image?.disBaseLink}
 											className="h-full w-full object-cover object-center group-hover:opacity-75"
 											alt={hit.image?.alt}

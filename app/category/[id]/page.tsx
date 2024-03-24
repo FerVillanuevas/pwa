@@ -8,12 +8,13 @@ import {
 import { getSession, config } from "@/lib/commerce";
 import { Product, Search } from "commerce-sdk";
 import { ChevronsUpDownIcon } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 export default async function Page({ params }: { params: { id: string } }) {
 	const token = await getSession();
 
-	if(!token) return <div>Error</div>;
+	if (!token) return <div>Error</div>;
 
 	const shopperProducts = new Product.ShopperProducts({
 		...config,
@@ -65,16 +66,22 @@ export default async function Page({ params }: { params: { id: string } }) {
 						{categoryRefinament && (
 							<ul className="space-y-4 border-b pb-6 text-sm font-medium text-foreground">
 								{categoryRefinament.values?.map((value) => {
-									return <li key={value.value}>
-										<Link href={'#'}>{value.label}</Link>
-									</li>;
+									return (
+										<li key={value.value}>
+											<Link href={"#"}>{value.label}</Link>
+										</li>
+									);
 								})}
 							</ul>
 						)}
 
 						{refinaments.map((refinament) => {
 							return (
-								<Collapsible key={refinament.attributeId} defaultOpen={true} className="border-b py-4">
+								<Collapsible
+									key={refinament.attributeId}
+									defaultOpen={true}
+									className="border-b py-4"
+								>
 									<CollapsibleTrigger asChild>
 										<div className="flex items-center justify-between ">
 											<h4 className="font-medium text-sm">
@@ -122,7 +129,9 @@ export default async function Page({ params }: { params: { id: string } }) {
 										className="group"
 									>
 										<div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-h-8 xl:aspect-w-7">
-											<img
+											<Image
+												width={200}
+												height={200}
 												src={hit.image?.disBaseLink}
 												className="h-full w-full object-cover object-center group-hover:opacity-75"
 												alt={hit.image?.alt}

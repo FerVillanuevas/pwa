@@ -7,9 +7,11 @@ import {
 	CarouselPrevious,
 } from "@/components/ui/carousel";
 import { config, getSession } from "@/lib/commerce";
+import { cn } from "@/lib/utils";
 import { getVariantValueSwatch } from "@/lib/utils/commerce";
 import { Checkout, Customer, Product } from "commerce-sdk";
 import { revalidateTag } from "next/cache";
+import Image from "next/image";
 import Link from "next/link";
 
 /* This is a server action! */
@@ -119,7 +121,9 @@ export default async function Page({
 								{product.imageGroups?.[0].images.map((image, i) => {
 									return (
 										<CarouselItem key={`${image.title}_${i}`}>
-											<img
+											<Image
+												width={500}
+												height={500}
 												className="w-full"
 												src={image?.disBaseLink}
 												alt={image?.alt}
@@ -182,7 +186,9 @@ export default async function Page({
 																	}).toString(),
 																}}
 															>
-																<img
+																<Image
+																	width={50}
+																	height={50}
 																	className="ring-2 aspect-square rounded-full w-10 cursor-pointer"
 																	src={sw?.disBaseLink}
 																	alt={sw?.alt}
@@ -206,9 +212,10 @@ export default async function Page({
 												return (
 													<li
 														key={value}
-														className="ring-2 w-10 aspect-square text-center flex items-center justify-center cursor-pointer"
+														className={cn('ring-2 w-10 aspect-square text-center flex items-center justify-center cursor-pointer', !orderable && 'bg-red-400')}
 													>
 														<Link
+															aria-disabled={!orderable}
 															href={{
 																pathname: `/product/${product.id}`,
 																query: new URLSearchParams({
@@ -240,7 +247,7 @@ export default async function Page({
 							});
 						}}
 					>
-						<SubmitButton toastText="Added to cart" className="mt-10 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+						<SubmitButton toastText="Added to cart" >
 							Add to bag
 						</SubmitButton>
 					</form>

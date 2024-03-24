@@ -14,6 +14,7 @@ import {
 import type { Product } from "commerce-sdk";
 import Link from "next/link";
 import { ComponentPropsWithoutRef, ElementRef, forwardRef } from "react";
+import Image from "next/image";
 
 export function NavigationMenu({
 	categories,
@@ -47,7 +48,9 @@ export function NavigationMenu({
 							<NavigationMenuTrigger>{category.name}</NavigationMenuTrigger>
 							<NavigationMenuContent>
 								{category.c_slotBannerImage && (
-									<img
+									<Image
+										width={500}
+										height={200}
 										className="flex h-full w-full select-none"
 										src={category.c_slotBannerImage}
 										alt={category.name}

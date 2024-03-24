@@ -5,6 +5,8 @@ import { ThemeProvider } from "@/providers/theme-provider";
 import Header from "@/components/commerce/header";
 import { NextUI } from "@/providers/nextui-provider";
 import { Toaster } from "@/components/ui/sonner";
+import NextTopLoader from 'nextjs-toploader';
+
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,6 +23,7 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body className={inter.className}>
+				<NextTopLoader />
 				<ThemeProvider
 					attribute="class"
 					defaultTheme="system"
@@ -34,6 +37,7 @@ export default function RootLayout({
 					</NextUI>
 				</ThemeProvider>
 				<Toaster />
+				
 			</body>
 		</html>
 	);
