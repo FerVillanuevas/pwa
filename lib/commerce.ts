@@ -1,4 +1,4 @@
-import { JWTPayload, SignJWT, jwtVerify } from "jose";
+import { type JWTPayload, SignJWT, jwtVerify } from "jose";
 import {
 	RequestCookies,
 	ResponseCookies,
