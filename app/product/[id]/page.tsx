@@ -6,9 +6,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { ViewTypes } from "@/enums/product";
-import { RecommenderType, getRecomendations } from "@/lib/Einstain";
 import { config, getSession } from "@/lib/commerce";
 import { cn } from "@/lib/utils";
 import { getVariantValueSwatch } from "@/lib/utils/commerce";
@@ -72,7 +70,6 @@ async function ProductView({ params, searchParams }: IParams) {
   const { pid, color } = searchParams;
 
   const token = await getSession();
-  let basket: Checkout.ShopperBaskets.Basket | null;
 
   const shopperProducts = new Product.ShopperProducts({
     ...config,
@@ -263,36 +260,6 @@ async function ProductView({ params, searchParams }: IParams) {
           </div>
         </div>
       </div>
-      <Suspense fallback={null}>
-        <div className="grid gap-4">
-          <h1 className="text-center text-2xl">Complete the Set</h1>
-
-          <Recomendations
-            product={product}
-            type={RecommenderType.PDP_COMPLETE_SET}
-          />
-        </div>
-      </Suspense>
-      <Suspense fallback={null}>
-        <div className="grid gap-4">
-          <h1 className="text-center text-2xl">You might also like</h1>
-          <Recomendations
-            product={product}
-            type={RecommenderType.PDP_MIGHT_ALSO_LIKE}
-          />
-        </div>
-      </Suspense>
-
-      <Suspense fallback={null}>
-        <div className="grid gap-4">
-          <h1 className="text-center text-2xl">Recently Viewed</h1>
-
-          <Recomendations
-            product={product}
-            type={RecommenderType.PDP_RECENTLY_VIEWED}
-          />
-        </div>
-      </Suspense>
     </div>
   );
 }
@@ -350,44 +317,5 @@ async function AddTobasket({ variant }: { variant?: ShopperProducts.Variant }) {
     >
       <SubmitButton toastText="Added to cart">Add to bag</SubmitButton>
     </form>
-  );
-}
-
-async function Recomendations({
-  product,
-  type,
-}: {
-  product: ShopperProducts.Product;
-  type: RecommenderType;
-}) {
-  const { recs } = await getRecomendations(type, [product]);
-
-  return (
-    <div className="px-20">
-      <Carousel>
-        <CarouselContent>
-          {recs.map((hit) => (
-            <CarouselItem key={hit.id} className="basis-1/4">
-              <Link href={`/product/${hit.id}`} className="group">
-                <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-h-8 xl:aspect-w-7">
-                  <Image
-                    width={200}
-                    height={200}
-                    src={hit.image_url || ""}
-                    className="h-full w-full object-cover object-center group-hover:opacity-75"
-                    alt={hit.product_name || ""}
-                  />
-                </div>
-                <h3 className="mt-4 text-sm text-foreground">
-                  {hit.product_name}
-                </h3>
-              </Link>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <CarouselPrevious />
-        <CarouselNext />
-      </Carousel>
-    </div>
   );
 }
