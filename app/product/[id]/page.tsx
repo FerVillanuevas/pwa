@@ -222,8 +222,8 @@ async function ProductView({ params, searchParams }: IParams) {
                   <ul className="flex gap-3">
                     {variationAttribute.values?.map(
                       ({ name, orderable, value }) => {
-                        //@ts-ignore
                         const selected =
+                          //@ts-ignore
                           searchParams[variationAttribute.id] === value;
 
                         return (

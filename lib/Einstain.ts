@@ -1,5 +1,4 @@
 import { ShopperProducts } from "commerce-sdk/dist/product/product";
-import { SITE_ID } from "./commerce";
 import axios from "axios";
 
 export enum RecommenderType {

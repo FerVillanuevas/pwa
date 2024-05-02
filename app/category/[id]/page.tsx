@@ -177,7 +177,15 @@ async function CategoryView({ params, searchParams }: ICategoryPage) {
   );
 }
 
-async function Category({ params, selectedRefinements }) {
+async function Category({
+  params,
+  selectedRefinements,
+}: {
+  params: {
+    id: string;
+  };
+  selectedRefinements?: { [key: string]: any };
+}) {
   const token = await getSession();
 
   if (!token) return <div>Error</div>;
@@ -204,7 +212,7 @@ async function Category({ params, selectedRefinements }) {
         {selectedRefinements &&
           Object.keys(selectedRefinements).map((key) => {
             if (key === "c_refinementColor") {
-              return selectedRefinements?.[key].split("|").map((color) => {
+              return selectedRefinements?.[key].split("|").map((color: string) => {
                 return <Button key={color}>{color}</Button>;
               });
             }
