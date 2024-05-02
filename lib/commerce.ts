@@ -7,11 +7,11 @@ import {
 import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
 
-const CLIENT_ID = "da422690-7800-41d1-8ee4-3ce983961078";
-const CLIENT_SECRET = "D*HHUrgO2%qADp2JTIUi";
-const ORG_ID = "f_ecom_zzte_053";
-const SHORT_CODE = "kv7kzm78";
-const SITE_ID = "RefArch";
+export const CLIENT_ID = "da422690-7800-41d1-8ee4-3ce983961078";
+export const CLIENT_SECRET = "D*HHUrgO2%qADp2JTIUi";
+export const ORG_ID = "f_ecom_zzte_053";
+export const SHORT_CODE = "kv7kzm78";
+export const SITE_ID = "RefArch";
 
 export const config = {
 	headers: {},
