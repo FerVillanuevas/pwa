@@ -13,9 +13,15 @@ export default function CartAction({ product, ...props }: ICartActionProps) {
   const basket = store$.basket.get();
   return (
     <div>
-      <Button {...props} onClick={async () => {
-        await AddToBasketAction(basket.basketId, product);
-      }}>Add to cart</Button>
+      <Button
+        {...props}
+        onClick={async () => {
+          basket?.basketId &&
+            (await AddToBasketAction(basket.basketId, product));
+        }}
+      >
+        Add to cart
+      </Button>
     </div>
   );
 }

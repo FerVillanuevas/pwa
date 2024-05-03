@@ -56,6 +56,7 @@ async function CategoryView({ params, searchParams }: ICategoryPage) {
   }
 
   const products = await shopperSearch.productSearch({
+    //@ts-ignore
     parameters: {
       ...searchParams,
     },
