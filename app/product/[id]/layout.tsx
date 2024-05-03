@@ -1,4 +1,5 @@
-export default function ProductLayout({
+
+export default async function ProductLayout({
   children,
   complete,
   maylike,

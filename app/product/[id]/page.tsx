@@ -1,4 +1,3 @@
-import SubmitButton from "@/components/commerce/SubmitButton";
 import {
   Carousel,
   CarouselContent,
@@ -10,63 +9,18 @@ import { ViewTypes } from "@/enums/product";
 import { config, getSession } from "@/lib/commerce";
 import { cn } from "@/lib/utils";
 import { getVariantValueSwatch } from "@/lib/utils/commerce";
-import { Checkout, Customer, Product } from "commerce-sdk";
-import { ShopperProducts } from "commerce-sdk/dist/product/product";
-import { revalidateTag } from "next/cache";
+import { Product } from "commerce-sdk";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
-
-/* This is a server action! */
-const addToCart = async (
-  basket: Checkout.ShopperBaskets.Basket | null,
-  product: { productId: string; price: number }
-) => {
-  if (!basket) return;
-
-  const token = await getSession();
-
-  const shopperBaskets = new Checkout.ShopperBaskets({
-    ...config,
-    headers: {
-      authorization: `Bearer ${token?.access_token}`,
-    },
-  });
-
-  await shopperBaskets.addItemToBasket({
-    parameters: {
-      //@ts-ignore
-      basketId: basket.basketId,
-    },
-    body: [
-      {
-        productId: product.productId,
-        price: product.price,
-        quantity: 1,
-      },
-    ],
-  });
-
-  /* This will revalidate the getBasket call, so it will update the cart Icon by consequence */
-  revalidateTag("basket");
-};
+import CartAction from "../components/cart-action";
 
 interface IParams {
   params: { id: string };
   searchParams: { pid?: string; color?: string };
 }
 
-export default async function Page({ params, searchParams }: IParams) {
-  return (
-    <div className="bg-background py-6">
-      <Suspense fallback={<p>loading...</p>}>
-        <ProductView params={params} searchParams={searchParams} />
-      </Suspense>
-    </div>
-  );
-}
-
-async function ProductView({ params, searchParams }: IParams) {
+export default async function ProductView({ params, searchParams }: IParams) {
   const { pid, color } = searchParams;
 
   const token = await getSession();
@@ -77,6 +31,9 @@ async function ProductView({ params, searchParams }: IParams) {
       authorization: `Bearer ${token?.access_token}`,
     },
   });
+
+
+
 
   const product = await shopperProducts.getProduct({
     parameters: { id: pid || params.id, allImages: true },
@@ -254,68 +211,12 @@ async function ProductView({ params, searchParams }: IParams) {
               );
             })}
 
-            <Suspense fallback={<p>Loading...</p>}>
-              <AddTobasket variant={variant} />
-            </Suspense>
+            {/* Button */}
+            <CartAction disabled={!variant} product={variant} />
+
           </div>
         </div>
       </div>
     </div>
-  );
-}
-
-async function AddTobasket({ variant }: { variant?: ShopperProducts.Variant }) {
-  const token = await getSession();
-  let basket: Checkout.ShopperBaskets.Basket | null;
-
-  const shopperBaskets = new Checkout.ShopperBaskets({
-    ...config,
-    headers: {
-      authorization: `Bearer ${token?.access_token}`,
-    },
-  });
-
-  const shopperCustomers = new Customer.ShopperCustomers({
-    ...config,
-    headers: {
-      authorization: `Bearer ${token?.access_token}`,
-    },
-  });
-
-  const baskets = await shopperCustomers.getCustomerBaskets({
-    parameters: {
-      //@ts-ignore
-      customerId: token?.customer_id,
-    },
-  });
-
-  if (baskets.total === 0) {
-    basket = await shopperBaskets.createBasket({
-      body: {
-        customerInfo: {
-          email: "",
-          //@ts-ignore
-          customerId: token?.customer_id,
-        },
-      },
-    });
-  } else {
-    basket = baskets.baskets?.[0] || null;
-  }
-
-  return (
-    <form
-      className="mt-10"
-      action={async () => {
-        "use server";
-        variant &&
-          (await addToCart(basket, {
-            productId: variant?.productId,
-            price: variant?.price || 0,
-          }));
-      }}
-    >
-      <SubmitButton toastText="Added to cart">Add to bag</SubmitButton>
-    </form>
   );
 }

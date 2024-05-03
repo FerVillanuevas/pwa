@@ -13,6 +13,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { isArray } from "lodash";
+import { ShopperProducts, ShopperSearch } from "commerce-sdk-isomorphic";
 
 interface ICategoryPage {
   params: {
@@ -41,7 +42,7 @@ async function CategoryView({ params, searchParams }: ICategoryPage) {
 
   const { id } = params;
 
-  const shopperSearch = new Search.ShopperSearch({
+  const shopperSearch = new ShopperSearch({
     ...config,
     headers: {
       authorization: `Bearer ${token.access_token}`,
@@ -56,9 +57,7 @@ async function CategoryView({ params, searchParams }: ICategoryPage) {
 
   const products = await shopperSearch.productSearch({
     parameters: {
-      limit: searchParams.limit,
-      refine: searchParams.refine,
-      sort: searchParams.sort,
+      ...searchParams,
     },
   });
 
@@ -190,7 +189,7 @@ async function Category({
 
   if (!token) return <div>Error</div>;
 
-  const shopperProducts = new Product.ShopperProducts({
+  const shopperProducts = new ShopperProducts({
     ...config,
     headers: {
       authorization: `Bearer ${token.access_token}`,
@@ -212,9 +211,11 @@ async function Category({
         {selectedRefinements &&
           Object.keys(selectedRefinements).map((key) => {
             if (key === "c_refinementColor") {
-              return selectedRefinements?.[key].split("|").map((color: string) => {
-                return <Button key={color}>{color}</Button>;
-              });
+              return selectedRefinements?.[key]
+                .split("|")
+                .map((color: string) => {
+                  return <Button key={color}>{color}</Button>;
+                });
             }
 
             return <Button key={key}>{selectedRefinements?.[key]}</Button>;
