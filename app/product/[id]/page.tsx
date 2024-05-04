@@ -14,6 +14,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import CartAction from "../components/cart-action";
+import composable from "@/lib/global";
 
 interface IParams {
   params: { id: string };
@@ -25,18 +26,13 @@ export default async function ProductView({ params, searchParams }: IParams) {
 
   const token = await getSession();
 
-  const shopperProducts = new Product.ShopperProducts({
-    ...config,
-    headers: {
-      authorization: `Bearer ${token?.access_token}`,
-    },
-  });
-
-
-
+  const { shopperProducts } = composable;
 
   const product = await shopperProducts.getProduct({
     parameters: { id: pid || params.id, allImages: true },
+    headers: {
+      authorization: `Bearer ${token?.access_token}`,
+    },
   });
 
   const variant = product.variants?.find((variant) => {
@@ -213,7 +209,6 @@ export default async function ProductView({ params, searchParams }: IParams) {
 
             {/* Button */}
             <CartAction disabled={!variant} product={variant} />
-
           </div>
         </div>
       </div>

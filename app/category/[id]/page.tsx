@@ -14,6 +14,7 @@ import { Suspense } from "react";
 
 import { isArray } from "lodash";
 import { ShopperProducts, ShopperSearch } from "commerce-sdk-isomorphic";
+import composable from "@/lib/global";
 
 interface ICategoryPage {
   params: {
@@ -42,12 +43,9 @@ async function CategoryView({ params, searchParams }: ICategoryPage) {
 
   const { id } = params;
 
-  const shopperSearch = new ShopperSearch({
-    ...config,
-    headers: {
-      authorization: `Bearer ${token.access_token}`,
-    },
-  });
+
+  const {shopperSearch} = composable;
+
   if (!isArray(searchParams.refine)) {
     const refine = searchParams.refine!;
     searchParams.refine = [refine, `cgid=${id}`];
@@ -59,6 +57,9 @@ async function CategoryView({ params, searchParams }: ICategoryPage) {
     //@ts-ignore
     parameters: {
       ...searchParams,
+    },
+    headers: {
+      authorization: `Bearer ${token.access_token}`,
     },
   });
 
@@ -190,16 +191,14 @@ async function Category({
 
   if (!token) return <div>Error</div>;
 
-  const shopperProducts = new ShopperProducts({
-    ...config,
-    headers: {
-      authorization: `Bearer ${token.access_token}`,
-    },
-  });
+  const {shopperProducts} = composable;
 
   const category = await shopperProducts.getCategory({
     parameters: {
       id: params.id,
+    },
+    headers: {
+      authorization: `Bearer ${token.access_token}`,
     },
   });
 
