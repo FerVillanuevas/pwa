@@ -1,12 +1,7 @@
 "use server";
 
-import { config, getSession } from "@/lib/commerce";
-import {
-  helpers,
-  ShopperLogin,
-  ShopperSearch,
-  ShopperBaskets,
-} from "commerce-sdk-isomorphic";
+import { getSession } from "@/lib/commerce";
+import composable from "@/lib/global";
 import { revalidateTag } from "next/cache";
 
 export default async function AddToBasketAction(
@@ -15,14 +10,9 @@ export default async function AddToBasketAction(
 ) {
   const token = await getSession();
 
-  const sp = new ShopperBaskets({
-    ...config,
-    headers: {
-      authorization: `Bearer ${token?.access_token}`,
-    },
-  });
+  const { shopperBaskets } = composable;
 
-  sp.addItemToBasket({
+  shopperBaskets.addItemToBasket({
     parameters: {
       basketId: basketId,
     },
@@ -33,6 +23,9 @@ export default async function AddToBasketAction(
         quantity: 1,
       },
     ],
+    headers: {
+      authorization: `Bearer ${token?.access_token}`,
+    },
   });
 
   revalidateTag("basket");
