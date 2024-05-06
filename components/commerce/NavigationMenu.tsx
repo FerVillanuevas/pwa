@@ -26,7 +26,7 @@ export function NavigationMenu({
 	return (
 		<NavigationMenuPrimary>
 			<NavigationMenuList>
-				{categories?.map((category: Product.ShopperProducts.Category, i: number) => {
+				{categories?.map((category: Product.ShopperProducts.Category) => {
 					const subCategory = subCategories?.find(
 						({ id }) => id === category.id,
 					);
