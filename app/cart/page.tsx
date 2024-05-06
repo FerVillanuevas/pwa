@@ -1,153 +1,112 @@
-import { getSession, config } from "@/lib/commerce";
+import { ViewTypes } from "@/enums/product";
+import { getSession } from "@/lib/commerce";
 import composable from "@/lib/global";
-import { Checkout, Customer, Product, Search } from "commerce-sdk";
+import { getImageByViewType } from "@/lib/utils/commerce";
+import { Checkout, Product } from "commerce-sdk";
+import currency from "currency.js";
 import Image from "next/image";
+import { Suspense } from "react";
 
 export default async function Page() {
-  let basket: Checkout.ShopperBaskets.Basket | null;
-  const token = await getSession();
+  const session = await getSession();
 
-  if (!token) return <div>error</div>;
+  if (!session) return <p>error...</p>;
 
-  const { shopperBaskets, shopperCustomers, shopperProducts } = composable;
+  const { shopperCustomers } = composable;
 
   const baskets = await shopperCustomers.getCustomerBaskets({
     parameters: {
-      //@ts-ignore
-      customerId: token?.customer_id,
+      customerId: session.customer_id,
     },
     headers: {
-      authorization: `Bearer ${token.access_token}`,
+      authorization: `Bearer ${session.access_token}`,
     },
-    next: { tags: ["basket"] },
   });
 
-  if (baskets.total === 0) {
-    basket = await shopperBaskets.createBasket({
-      body: {
-        customerInfo: {
-          email: "",
-          //@ts-ignore
-          customerId: token?.customer_id,
-        },
-      },
-      headers: {
-        authorization: `Bearer ${token.access_token}`,
-      },
-    });
-  } else {
-    basket = baskets.baskets?.[0] || null;
-  }
+  const basket = baskets?.baskets?.[0];
 
-  const products = basket?.productItems
-    ? await shopperProducts.getProducts({
-        parameters: {
-          ids: basket?.productItems?.map(({ productId }) => productId).join(),
-          allImages: true,
-        },
-        headers: {
-          authorization: `Bearer ${token.access_token}`,
-        },
-      })
-    : [];
-
-  const findColorImage = (
-    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-    fullProduct: { imageGroups: any[]; variationAttributes: any[] },
-    productItem: Checkout.ShopperBaskets.ProductItem
-  ): Product.ShopperProducts.Image | null => {
-    const images = fullProduct?.imageGroups?.filter(
-      ({ viewType, variationAttributes }) =>
-        viewType === "small" && variationAttributes
-    );
-
-    const color = fullProduct?.variationAttributes?.find(
-      ({ id }) => id === "color"
-    )?.values?.[0].value;
-    const colorImages = images?.find(({ variationAttributes }) =>
-      variationAttributes?.find(
-        //@ts-ignore
-        ({ id, values }) =>
-          //@ts-ignore
-          id === "color" && values?.find(({ value }) => value === color)
-      )
-    );
-
-    if (colorImages) {
-      return colorImages.images[0];
-    }
-    const imagesLarge = fullProduct?.imageGroups?.find(
-      ({ viewType }) => viewType === "large"
-    );
-    return imagesLarge?.images[0] || null;
-  };
+  if (!basket) return <p>Empty...</p>;
 
   return (
     <div className="container">
       <div className="grid grid-cols-6 gap-4">
         <div className="col-span-4">
-          <ul className="divide-y py-4">
-            {basket?.productItems?.map((productItem) => {
-              //@ts-ignore
-              const fullProduct = products.data?.find(
-                ({ id }: { id: string }) => id === productItem.productId
-              );
-              const image = findColorImage(fullProduct, productItem);
-              return (
-                <li key={productItem.itemId} className="flex py-6">
-                  <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border ">
-                    {image && (
-                      <Image
-                        src={image.disBaseLink || ""}
-                        alt={image.alt || ""}
-                        width={100}
-                        height={100}
-                      />
-                    )}
-                  </div>
-
-                  <div className="ml-4 flex flex-1 flex-col">
-                    <div>
-                      <div className="flex justify-between text-base font-medium text-foreground">
-                        <h3>{productItem.productName}</h3>
-                        <p className="ml-4">${productItem.price}</p>
-                      </div>
-                      <p className="mt-1 text-sm text-foreground">Salmon</p>
-                    </div>
-                    <div className="flex flex-1 items-end justify-between text-sm">
-                      <p className="text-foreground">Qty 1</p>
-
-                      <div className="flex">
-                        <button
-                          type="button"
-                          className="font-medium text-indigo-600 hover:text-indigo-500"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+          <Suspense fallback={<p>loading...</p>}>
+            <FullProducts basket={basket} />
+          </Suspense>
         </div>
         <div className="col-span-2 py-4 space-y-4 text-sm font-medium">
           <h1 className="text-xl font-bold">Summary</h1>
           <div className="flex justify-between">
-            <b>Subtotal:</b> ${basket?.productSubTotal}
+            <b>Subtotal:</b> {currency(basket?.productSubTotal || 0).format()}
           </div>
           <div className="flex justify-between">
-            <b>Shipping:</b> ${basket?.shippingTotal}
+            <b>Shipping:</b> {currency(basket?.shippingTotal || 0).format()}
           </div>
           <div className="flex justify-between">
-            <b>tax:</b> ${basket?.taxTotal}
+            <b>tax:</b> {currency(basket?.taxTotal || 0).format()}
           </div>
           <div className="flex justify-between">
-            <b>Estimated Total:</b> ${basket?.productTotal}
+            <b>Estimated Total:</b>
+            {currency(basket?.productTotal || 0).format()}
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+async function FullProducts({
+  basket,
+}: {
+  basket: Checkout.ShopperBaskets.Basket;
+}) {
+  const session = await getSession();
+  if (!basket.productItems || !session) return <p>empty...</p>;
+
+  const { shopperProducts } = composable;
+
+  const products = await shopperProducts.getProducts({
+    parameters: {
+      ids: basket.productItems.map(({ productId }) => productId).join(","),
+      allImages: true,
+    },
+    headers: {
+      authorization: `Bearer ${session.access_token}`,
+    },
+  });
+
+  return (
+    <ul className="divide-y py-4">
+      {basket.productItems.map((productItem) => {
+        const product = products.data.find(
+          ({ id }) => id === productItem.productId
+        );
+
+        return (
+          <li key={productItem.productId}>
+            {product && <Product product={product} />}
+            {productItem.productName}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+function Product({ product }: { product: Product.ShopperProducts.Product }) {
+  const imageGroup = getImageByViewType(product.imageGroups!, ViewTypes.LARGE);
+
+  return (
+    <>
+      {imageGroup?.images && (
+        <Image
+          src={imageGroup?.images[0].disBaseLink || ""}
+          alt={imageGroup?.images[0].alt || ""}
+          width={100}
+          height={100}
+        />
+      )}
+    </>
   );
 }
