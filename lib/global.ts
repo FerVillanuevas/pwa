@@ -16,7 +16,6 @@ import {
 import { config } from "./commerce";
 
 // --- API CLIENTS --- //
-
 export type ApiClientConfigParams = {
   clientId: string;
   organizationId: string;
@@ -42,8 +41,6 @@ export interface ApiClients {
 
 //@ts-ignore
 let composable: ApiClients = global.composable;
-
-
 
 if (!composable) {
   /* Init composable objects */

@@ -12,7 +12,7 @@ export default async function AddToBasketAction(
 
   const { shopperBaskets } = composable;
 
-  shopperBaskets.addItemToBasket({
+  const basket = shopperBaskets.addItemToBasket({
     parameters: {
       basketId: basketId,
     },
@@ -28,5 +28,7 @@ export default async function AddToBasketAction(
     },
   });
 
-  revalidateTag("basket");
+  revalidateTag('basket');
+  
+  return basket;
 }

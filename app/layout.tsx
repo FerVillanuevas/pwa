@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
 import Header from "@/components/commerce/header";
-import { NextUI } from "@/providers/nextui-provider";
 import { Toaster } from "@/components/ui/sonner";
 import NextTopLoader from "nextjs-toploader";
 import StateProvider from "@/providers/state-provider";
@@ -21,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning={true}>
       <body className={inter.className}>
         <NextTopLoader />
         <StateProvider>
@@ -31,10 +30,8 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <NextUI>
-              <Header />
-              {children}
-            </NextUI>
+            <Header />
+            {children}
           </ThemeProvider>
         </StateProvider>
         <Toaster />

@@ -1,3 +1,4 @@
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Carousel,
   CarouselContent,
@@ -5,16 +6,15 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { getSession, config } from "@/lib/commerce";
+import { getSession } from "@/lib/commerce";
 import composable from "@/lib/global";
-import { Search } from "commerce-sdk";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 
 export default async function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24 container">
+    <main className="flex min-h-screen flex-col items-center justify-between container">
       <Suspense fallback={null}>
         <ProductCarousel />
       </Suspense>
@@ -35,21 +35,27 @@ async function ProductCarousel() {
   });
 
   return (
-    <Carousel>
-      <CarouselContent>
-        {searchResults?.hits?.map((hit) => {
-          return (
-            <CarouselItem key={hit.productId} className="basis-1/4">
-              <Link href={`/product/${hit.productId}`} className="group">
-                <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-h-8 xl:aspect-w-7">
-                  <Image
-                    width={200}
-                    height={200}
-                    src={hit.image?.disBaseLink || ""}
-                    className="h-full w-full object-cover object-center group-hover:opacity-75"
-                    alt={hit.image?.alt || ""}
-                  />
-                </div>
+    <div className="px-6 w-full">
+      <Carousel className="w-full">
+        <CarouselContent className="-ml-1">
+          {searchResults?.hits?.map((hit) => (
+            <CarouselItem
+              key={hit.productId}
+              className="pl-1 md:basis-1/2 lg:basis-1/3"
+            >
+               <Link href={`/product/${hit.productId}`} className="p-1">
+                <Card className="overflow-hidden">
+                  <CardContent className="flex aspect-square items-center justify-center p-0 ">
+                    <Image
+                      width={200}
+                      height={200}
+                      src={hit.image?.disBaseLink || ""}
+                      className="h-full w-full object-cover object-center group-hover:opacity-75"
+                      alt={hit.image?.alt || ""}
+                      priority
+                    />
+                  </CardContent>
+                </Card>
                 <h3 className="mt-4 text-sm text-foreground">
                   {hit.productName}
                 </h3>
@@ -58,11 +64,11 @@ async function ProductCarousel() {
                 </p>
               </Link>
             </CarouselItem>
-          );
-        })}
-      </CarouselContent>
-      <CarouselPrevious />
-      <CarouselNext />
-    </Carousel>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious />
+        <CarouselNext />
+      </Carousel>
+    </div>
   );
 }

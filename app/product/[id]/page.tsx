@@ -58,10 +58,10 @@ export default async function ProductView({ params, searchParams }: IParams) {
   const images = colorGroup?.images || product.imageGroups?.[0].images;
 
   return (
-    <div className="container space-y-4">
-      <div className="grid grid-cols-3 gap-4">
-        <div className="col-span-2">
-          <div className="container w-full justify-center flex px-20 sticky top-20">
+    <div className="md:container space-y-4">
+      <div className="grid md:grid-cols-3 gap-4">
+        <div className="md:col-span-2">
+          <div className="w-full justify-center flex sticky top-20">
             <Carousel>
               <CarouselContent>
                 {images?.map((image, i) => {
@@ -80,13 +80,15 @@ export default async function ProductView({ params, searchParams }: IParams) {
                   );
                 })}
               </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
+              <div className="absolute bottom-0 right-5 flex gap-4">
+                <CarouselPrevious className="relative left-auto" />
+                <CarouselNext className="relative right-auto" />
+              </div>
             </Carousel>
           </div>
         </div>
 
-        <div className="col-span-1">
+        <div className="container md:col-span-1">
           <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             {product.name}
           </h1>
@@ -95,27 +97,6 @@ export default async function ProductView({ params, searchParams }: IParams) {
           <p className="text-3xl tracking-tight text-foreground mt-4">
             ${product.price}
           </p>
-
-          <div className="mt-10">
-            <h3 className="sr-only">Description</h3>
-
-            <div className="space-y-6 prose dark:prose-invert">
-              {product.shortDescription}
-            </div>
-          </div>
-
-          {product.longDescription && (
-            <div className="mt-10">
-              <h2 className="text-sm font-medium text-foreground">Details</h2>
-
-              <div className="mt-4 space-y-6 prose dark:prose-invert">
-                <div
-                  className="prose dark:prose-invert"
-                  dangerouslySetInnerHTML={{ __html: product.longDescription }}
-                />
-              </div>
-            </div>
-          )}
 
           <div className="mt-10 space-y-3">
             {product.variationAttributes?.map((variationAttribute) => {
@@ -210,6 +191,27 @@ export default async function ProductView({ params, searchParams }: IParams) {
             {/* Button */}
             <CartAction disabled={!variant} product={variant} />
           </div>
+
+          <div className="mt-10">
+            <h3 className="sr-only">Description</h3>
+
+            <div className="space-y-6 prose dark:prose-invert">
+              {product.shortDescription}
+            </div>
+          </div>
+
+          {product.longDescription && (
+            <div className="mt-10">
+              <h2 className="text-sm font-medium text-foreground">Details</h2>
+
+              <div className="mt-4 space-y-6 prose dark:prose-invert">
+                <div
+                  className="prose dark:prose-invert"
+                  dangerouslySetInnerHTML={{ __html: product.longDescription }}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

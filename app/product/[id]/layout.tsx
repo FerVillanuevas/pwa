@@ -11,7 +11,7 @@ export default async function ProductLayout({
   recently_viewed: React.ReactNode;
 }) {
   return (
-    <div className="container space-y-8">
+    <div className="space-y-8">
       {children}
 
       {complete}
