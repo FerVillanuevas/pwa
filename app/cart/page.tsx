@@ -85,7 +85,7 @@ async function FullProducts({
 
         return (
           <li key={productItem.productId}>
-            {product && <Product product={product} />}
+            {product && <ProductItem product={product} />}
             {productItem.productName}
           </li>
         );
@@ -94,7 +94,7 @@ async function FullProducts({
   );
 }
 
-function Product({ product }: { product: Product.ShopperProducts.Product }) {
+function ProductItem({ product }: { product: Product.ShopperProducts.Product }) {
   const imageGroup = getImageByViewType(product.imageGroups!, ViewTypes.LARGE);
 
   return (

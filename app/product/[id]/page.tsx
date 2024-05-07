@@ -33,6 +33,8 @@ export default async function ProductView({ params, searchParams }: IParams) {
     headers: {
       authorization: `Bearer ${token?.access_token}`,
     },
+    //@ts-ignore
+    next: { tags: ["product", pid] }
   });
 
   const variant = product.variants?.find((variant) => {
