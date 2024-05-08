@@ -3,9 +3,14 @@ import { getSession } from "@/lib/commerce";
 import composable from "@/lib/global";
 import { getImageByViewType } from "@/lib/utils/commerce";
 import { Checkout, Product } from "commerce-sdk";
-import currency from "currency.js";
 import Image from "next/image";
 import { Suspense } from "react";
+
+import Link from "@/components/commerce/Link";
+import dynamic from "next/dynamic";
+const BasketSummary = dynamic(() => import("@/components/commerce/basket-summary"), {
+  loading: () => <p>loading...</p>,
+});
 
 export default async function Page() {
   const session = await getSession();
@@ -35,21 +40,11 @@ export default async function Page() {
             <FullProducts basket={basket} />
           </Suspense>
         </div>
-        <div className="col-span-2 py-4 space-y-4 text-sm font-medium">
-          <h1 className="text-xl font-bold">Summary</h1>
-          <div className="flex justify-between">
-            <b>Subtotal:</b> {currency(basket?.productSubTotal || 0).format()}
-          </div>
-          <div className="flex justify-between">
-            <b>Shipping:</b> {currency(basket?.shippingTotal || 0).format()}
-          </div>
-          <div className="flex justify-between">
-            <b>tax:</b> {currency(basket?.taxTotal || 0).format()}
-          </div>
-          <div className="flex justify-between">
-            <b>Estimated Total:</b>
-            {currency(basket?.productTotal || 0).format()}
-          </div>
+        <div className="col-span-2 ">
+          <BasketSummary />
+          <Link href={"/checkout"} variant="default">
+            Checkout
+          </Link>
         </div>
       </div>
     </div>
@@ -94,7 +89,11 @@ async function FullProducts({
   );
 }
 
-function ProductItem({ product }: { product: Product.ShopperProducts.Product }) {
+function ProductItem({
+  product,
+}: {
+  product: Product.ShopperProducts.Product;
+}) {
   const imageGroup = getImageByViewType(product.imageGroups!, ViewTypes.LARGE);
 
   return (

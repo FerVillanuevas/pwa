@@ -1,15 +1,15 @@
-import { getSession, config } from "@/lib/commerce";
+import { getSession } from "@/lib/commerce";
 import { ModeToggle } from "../mode-toggle";
 import Link from "./Link";
-import { Product } from "commerce-sdk";
 import { NavigationMenu } from "./NavigationMenu";
-import Cart from "./Cart";
 import composable from "@/lib/global";
-import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
-import { Button } from "react-day-picker";
-import { Menu, Package2 } from "lucide-react";
 import MobileMenu from "./mobile-menu";
 import SearchSheet from "./search-sheet";
+import dynamic from "next/dynamic";
+
+const Cart = dynamic(() => import("./Cart"), {
+  loading: () => <p>Loading...</p>,
+});
 
 export default async function Header() {
   const token = await getSession();
@@ -56,6 +56,7 @@ export default async function Header() {
           <SearchSheet />
 
           <Cart />
+
           <ModeToggle />
         </div>
       </div>

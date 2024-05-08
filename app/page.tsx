@@ -41,7 +41,7 @@ async function ProductCarousel() {
           {searchResults?.hits?.map((hit) => (
             <CarouselItem
               key={hit.productId}
-              className="pl-1 md:basis-1/2 lg:basis-1/3"
+              className="pl-1 md:basis-1/2 lg:basis-1/4"
             >
                <Link href={`/product/${hit.productId}`} className="p-1">
                 <Card className="overflow-hidden">

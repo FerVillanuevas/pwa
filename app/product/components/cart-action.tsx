@@ -4,7 +4,7 @@ import { Button, ButtonProps } from "@/components/ui/button";
 import { store$ } from "@/lib/state/store";
 import AddToBasketAction from "../actions/add-to-basket";
 import { ShopperProducts } from "commerce-sdk/dist/product/product";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Loader2Icon } from "lucide-react";
 
@@ -19,16 +19,23 @@ export default function CartAction({
 }: ICartActionProps) {
   const basket = store$.basket.get();
 
+  const queryClient = useQueryClient();
+
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
       const newBasket = await AddToBasketAction(basket.basketId!, product);
       return newBasket;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      
+      await queryClient.invalidateQueries({
+        queryKey: ["basket"],
+      });
+
       toast.success("Producct added", {
         action: {
-          label: "Action",
-          onClick: () => console.log("Action!"),
+          label: "Close",
+          onClick: () => console.log("Close!"),
         },
       });
     },
