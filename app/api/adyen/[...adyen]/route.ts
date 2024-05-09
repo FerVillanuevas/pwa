@@ -1,0 +1,62 @@
+import { config } from "@/lib/commerce";
+import { Checkout } from "commerce-sdk";
+import { NextRequest, NextResponse } from "next/server";
+
+export const ORDER = {
+  ORDER_STATUS_CREATED: "created",
+  ORDER_STATUS_NEW: "new",
+  ORDER_STATUS_COMPLETED: "completed",
+  ORDER_STATUS_CANCELED: "cancelled",
+  ORDER_STATUS_FAILED: "failed",
+  PAYMENT_STATUS_PAID: "paid",
+  PAYMENT_STATUS_PART_PAID: "part_paid",
+  PAYMENT_STATUS_NOT_PAID: "not_paid",
+  EXPORT_STATUS_READY: "ready",
+  EXPORT_STATUS_FAILED: "failed",
+  EXPORT_STATUS_EXPORTED: "exported",
+  EXPORT_STATUS_NOT_EXPORTED: "not_exported",
+  CONFIRMATION_STATUS_CONFIRMED: "confirmed",
+  CONFIRMATION_STATUS_NOT_CONFIRMED: "not_confirmed",
+};
+
+export const GET = async (
+  req: NextRequest,
+  { params }: { params: { adyen: string[] } }
+) => {
+  const base64data = Buffer.from(
+    `eb2ac72a-a770-4823-ad76-987ba1619a2a:s5meDzHe4hkGAxog`
+  ).toString("base64");
+
+  const res = await fetch(
+    "https://account.demandware.com/dwsso/oauth2/access_token",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${base64data}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        grant_type: "client_credentials",
+        scope: `SALESFORCE_COMMERCE_API:zybl_003 sfcc.orders.rw`
+      }),
+    }
+  );
+
+  const json = await res.json();
+
+  const orders = new Checkout.Orders(config);
+
+  const order = await orders.updateOrderPaymentStatus({
+    parameters: {
+        orderNo: '00000204'
+    },
+    body: {
+        status: ORDER.PAYMENT_STATUS_PAID
+    },
+    headers: {
+      Authorization: `Bearer ${json.access_token}`,
+    },
+  });
+
+  return NextResponse.json(order);
+};
