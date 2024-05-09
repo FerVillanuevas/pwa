@@ -139,6 +139,30 @@ export async function sumbitPayment({
   }
 }
 
+export async function submitAditionalDetails({
+  body,
+  customerId,
+}: {
+  body: any;
+  customerId: string;
+}) {
+  const { data } = await axios.post(
+    "https://checkout-test.adyen.com/v70/payments",
+    {
+      ...body,
+      merchantAccount: process.env.ADYEN_MERCHANT_ACCOUNT,
+    },
+    {
+      headers: {
+        customerid: customerId,
+        "x-api-key": process.env.ADYEN_API_KEY,
+      },
+    }
+  );
+
+  return data;
+}
+
 export async function continueAsGuest({ basketId, email }: any) {
   const session = await getSession();
 

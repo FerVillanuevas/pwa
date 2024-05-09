@@ -4,21 +4,14 @@ import AdyenCheckoutPrimitive from "@adyen/adyen-web";
 import "@adyen/adyen-web/dist/adyen.css";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
-import { sumbitPayment } from "../actions";
+import { submitAditionalDetails, sumbitPayment } from "../actions";
 import { store$ } from "@/lib/state/store";
-
-const onAdditionalDetails = async (state, component, props) => {
-  /* const adyenPaymentsDetailsService = new AdyenPaymentsDetailsService(props?.token, props?.site)
-  const paymentsDetailsResponse = await adyenPaymentsDetailsService.submitPaymentsDetails(
-      state.data,
-      props?.customerId
-  )
-  return {paymentsDetailsResponse: paymentsDetailsResponse} */
-  return {};
-};
+import { useRouter } from "next/navigation";
 
 export default function AdyenCheckout({ methods }: { methods: JSON }) {
   const basket = store$.basket.get();
+
+  const router = useRouter();
 
   const dropInRef = useRef<HTMLDivElement>();
 
@@ -34,6 +27,19 @@ export default function AdyenCheckout({ methods }: { methods: JSON }) {
         customerId: basket.customerInfo?.customerId!,
         basketId: basket.basketId!,
       });
+      return data;
+    },
+    onSuccess: async (responses) => {
+      router.replace(`/checkout/confirmation/${responses?.merchantReference}`);
+    },
+  });
+
+  const { mutate: onAdditionalDetails } = useMutation({
+    mutationFn: async (state) => {
+      const data = await submitAditionalDetails(
+        state.data,
+        basket.customerInfo?.customerId!
+      );
       return data;
     },
     onSuccess: (res) => {
@@ -52,7 +58,14 @@ export default function AdyenCheckout({ methods }: { methods: JSON }) {
     onSubmit: (state) => {
       mutate(state);
     },
-    onAdditionalDetails: onAdditionalDetails,
+    onAdditionalDetails: (state) => {
+      onAdditionalDetails(state);
+    },
+    onChange: (state) => {
+      if (state.isValid) {
+        console.log(state.data);
+      }
+    },
     paymentMethodsConfiguration: {
       card: {
         // Example optional configuration for Cards
@@ -69,6 +82,8 @@ export default function AdyenCheckout({ methods }: { methods: JSON }) {
     const createCheckout = async () => {
       //@ts-ignore
       const checkout = await AdyenCheckoutPrimitive(configuration);
+
+      checkout.submitDetails();
 
       checkout
         .create("dropin", {
