@@ -1,4 +1,4 @@
-import { getSession } from "@/lib/commerce";
+import { AuthTypes, getSession } from "@/lib/commerce";
 import { ModeToggle } from "../mode-toggle";
 import Link from "./Link";
 import { NavigationMenu } from "./NavigationMenu";
@@ -6,16 +6,17 @@ import { shopperProducts } from "@/lib/global";
 import MobileMenu from "./mobile-menu";
 import SearchSheet from "./search-sheet";
 import dynamic from "next/dynamic";
+import LoginDialog from "./login-dialog";
+import CustomerMenu from "./customer-menu";
 
 const Cart = dynamic(() => import("./Cart"), {
   loading: () => <p>Loading...</p>,
 });
 
 export default async function Header() {
-  const token = await getSession();
+  const session = await getSession();
 
-  if (!token) return <div>empty</div>;
-
+  if (!session) return <div>empty</div>;
 
   const { categories } = await shopperProducts.getCategory({
     parameters: {
@@ -23,7 +24,7 @@ export default async function Header() {
       levels: 1,
     },
     headers: {
-      authorization: `Bearer ${token.access_token}`,
+      authorization: `Bearer ${session.access_token}`,
     },
   });
 
@@ -36,13 +37,13 @@ export default async function Header() {
       levels: 2,
     },
     headers: {
-      authorization: `Bearer ${token.access_token}`,
+      authorization: `Bearer ${session.access_token}`,
     },
   });
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-14 justify-between items-center space-x-4 px-4 container">
+      <div className="flex h-14 items-center justify-between px-4 md:container">
         <MobileMenu categories={categories} subCategories={subCategories} />
         <Link href="/">#Commer Arch</Link>
         <nav className="md:flex items-center gap-1 text-sm hidden">
@@ -52,6 +53,12 @@ export default async function Header() {
           />
         </nav>
         <div className="flex items-center space-x-2 ">
+          {session.type === AuthTypes.Guest ? (
+            <LoginDialog />
+          ) : (
+            <CustomerMenu />
+          )}
+
           <SearchSheet />
 
           <Cart />

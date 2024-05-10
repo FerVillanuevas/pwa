@@ -38,19 +38,12 @@ export default function SearchSheet() {
 
   return (
     <Sheet open={open} onOpenChange={(open) => setOpen(open)}>
-      <Button variant="outline" size="icon" className="md:hidden">
+      <Button variant="outline" size="icon">
         <Search
           className="h-[1.2rem] w-[1.2rem] "
           onClick={() => setOpen(true)}
         />
       </Button>
-      <Input
-        className="hidden md:flex"
-        placeholder="search"
-        onFocus={() => {
-          !open && setOpen(true);
-        }}
-      />
       <SheetContent
         side="top"
         hideClose={true}
