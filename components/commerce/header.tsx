@@ -2,7 +2,7 @@ import { getSession } from "@/lib/commerce";
 import { ModeToggle } from "../mode-toggle";
 import Link from "./Link";
 import { NavigationMenu } from "./NavigationMenu";
-import composable from "@/lib/global";
+import { shopperProducts } from "@/lib/global";
 import MobileMenu from "./mobile-menu";
 import SearchSheet from "./search-sheet";
 import dynamic from "next/dynamic";
@@ -16,7 +16,6 @@ export default async function Header() {
 
   if (!token) return <div>empty</div>;
 
-  const { shopperProducts } = composable;
 
   const { categories } = await shopperProducts.getCategory({
     parameters: {

@@ -1,13 +1,12 @@
-import { getSession, config } from "@/lib/commerce";
-import composable from "@/lib/global";
-import { Checkout, Customer } from "commerce-sdk";
+import { getSession } from "@/lib/commerce";
+import { shopperBaskets, shopperCustomers } from "@/lib/global";
+import { Checkout } from "commerce-sdk";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   const token = await getSession();
   let basket: Checkout.ShopperBaskets.Basket | null;
 
-  const { shopperBaskets, shopperCustomers } = composable;
 
   const baskets = await shopperCustomers.getCustomerBaskets({
     parameters: {

@@ -1,12 +1,11 @@
 "use server";
 
 import { getSession } from "@/lib/commerce";
-import composable from "@/lib/global";
+import { shopperSearch } from "@/lib/global";
 
 export async function ProductSearch({ query }: { query?: string }) {
   const token = await getSession();
 
-  const { shopperSearch } = composable;
 
   const suggestions = shopperSearch.productSearch({
     parameters: {
@@ -23,7 +22,6 @@ export async function ProductSearch({ query }: { query?: string }) {
 export default async function SearchSuggestions({ query }: { query?: string }) {
   const token = await getSession();
 
-  const { shopperSearch } = composable;
 
   const suggestions = shopperSearch.getSearchSuggestions({
     parameters: {

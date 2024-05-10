@@ -1,4 +1,5 @@
 import { config } from "@/lib/commerce";
+import { hmacValidator } from "@adyen/api-library";
 import { Checkout } from "commerce-sdk";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -19,10 +20,26 @@ export const ORDER = {
   CONFIRMATION_STATUS_NOT_CONFIRMED: "not_confirmed",
 };
 
-export const GET = async (
-  req: NextRequest,
-  { params }: { params: { adyen: string[] } }
-) => {
+export const POST = async (req: NextRequest) => {
+  const { notificationItems } = await req.json();
+
+  const { NotificationRequestItem } = notificationItems[0];
+
+  const HmacValidator = new hmacValidator();
+
+  if (
+    !HmacValidator.validateHMAC(
+      NotificationRequestItem,
+      process.env.ADYEN_HMAC_KEY!
+    )
+  ) {
+    throw new Error();
+  }
+
+  if (NotificationRequestItem.success !== "true") {
+    throw new Error();
+  }
+
   const base64data = Buffer.from(
     `eb2ac72a-a770-4823-ad76-987ba1619a2a:s5meDzHe4hkGAxog`
   ).toString("base64");
@@ -37,26 +54,53 @@ export const GET = async (
       },
       body: new URLSearchParams({
         grant_type: "client_credentials",
-        scope: `SALESFORCE_COMMERCE_API:zybl_003 sfcc.orders.rw`
+        scope: `SALESFORCE_COMMERCE_API:zybl_003 sfcc.orders.rw`,
       }),
     }
   );
 
   const json = await res.json();
 
+  const orderNo = NotificationRequestItem.merchantReference;
+
   const orders = new Checkout.Orders(config);
 
-  const order = await orders.updateOrderPaymentStatus({
+  await orders.updateOrderConfirmationStatus({
     parameters: {
-        orderNo: '00000204'
+      orderNo,
     },
     body: {
-        status: ORDER.PAYMENT_STATUS_PAID
+      status: ORDER.CONFIRMATION_STATUS_CONFIRMED,
+    },
+  });
+
+  await orders.updateOrderPaymentStatus({
+    parameters: {
+      orderNo,
+    },
+    body: {
+      status: ORDER.PAYMENT_STATUS_PAID,
     },
     headers: {
       Authorization: `Bearer ${json.access_token}`,
     },
   });
+  await orders.updateOrderExportStatus({
+    parameters: {
+      orderNo,
+    },
+    body: {
+      status: ORDER.EXPORT_STATUS_READY,
+    },
+  });
+  await orders.updateOrderStatus({
+    parameters: {
+      orderNo,
+    },
+    body: {
+      status: ORDER.ORDER_STATUS_NEW,
+    },
+  });
 
-  return NextResponse.json(order);
+  return NextResponse.json({}, { status: 200 });
 };

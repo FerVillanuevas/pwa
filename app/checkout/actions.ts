@@ -1,7 +1,7 @@
 "use server";
 
 import checkoutApi from "@/lib/adyen";
-import composable from "@/lib/global";
+import { shopperBaskets, shopperOrders } from "@/lib/global";
 import { Types } from "@adyen/api-library";
 import { v4 } from "uuid";
 import { getSession } from "@/lib/commerce";
@@ -63,7 +63,6 @@ export async function sumbitPayment({
   try {
     const session = await getSession();
 
-    const { shopperBaskets, shopperOrders } = composable;
 
     const basket = await shopperBaskets.getBasket({
       parameters: {
@@ -166,8 +165,6 @@ export async function submitAditionalDetails({
 export async function continueAsGuest({ basketId, email }: any) {
   const session = await getSession();
 
-  const { shopperBaskets } = composable;
-
   const response = await shopperBaskets.updateCustomerForBasket({
     parameters: {
       basketId,
@@ -191,7 +188,6 @@ export async function updateShippingAddresss({
   shipping: any;
 }) {
   const session = await getSession();
-  const { shopperBaskets } = composable;
 
   shopperBaskets.updateShippingAddressForShipment({
     parameters: {
@@ -214,7 +210,6 @@ export async function getShippingMethods({
   shipmentId?: string;
 }) {
   const session = await getSession();
-  const { shopperBaskets } = composable;
 
   const response = await shopperBaskets.getShippingMethodsForShipment({
     parameters: {
@@ -239,7 +234,6 @@ export async function updateShippingMethod({
   shippingMethodId: string;
 }) {
   const session = await getSession();
-  const { shopperBaskets } = composable;
 
   const response = await shopperBaskets.updateShippingMethodForShipment({
     parameters: {

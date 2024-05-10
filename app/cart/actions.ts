@@ -1,12 +1,11 @@
 "use server";
 
 import { getSession } from "@/lib/commerce";
-import composable from "@/lib/global";
+import { shopperBaskets, shopperProducts } from "@/lib/global";
 
 export async function getProducts(ids: string) {
   const token = await getSession();
 
-  const { shopperProducts } = composable;
 
   const products = await shopperProducts.getProducts({
     parameters: {
@@ -24,7 +23,6 @@ export async function getProducts(ids: string) {
 export default async function getBasket(basketId: string) {
   const token = await getSession();
 
-  const { shopperBaskets } = composable;
 
   const basket = await shopperBaskets.getBasket({
     parameters: {

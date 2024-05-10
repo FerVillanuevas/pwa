@@ -6,6 +6,7 @@ import {
 
 import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
+import { shopperLogin } from "./global";
 
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;

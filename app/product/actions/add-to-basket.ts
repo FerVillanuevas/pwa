@@ -1,7 +1,7 @@
 "use server";
 
 import { getSession } from "@/lib/commerce";
-import composable from "@/lib/global";
+import { shopperBaskets } from "@/lib/global";
 import { revalidateTag } from "next/cache";
 
 export default async function AddToBasketAction(
@@ -10,7 +10,6 @@ export default async function AddToBasketAction(
 ) {
   const token = await getSession();
 
-  const { shopperBaskets } = composable;
 
   const basket = shopperBaskets.addItemToBasket({
     parameters: {

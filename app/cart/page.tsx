@@ -1,6 +1,6 @@
 import { ViewTypes } from "@/enums/product";
 import { getSession } from "@/lib/commerce";
-import composable from "@/lib/global";
+import { shopperCustomers, shopperProducts } from "@/lib/global";
 import { getImageByViewType } from "@/lib/utils/commerce";
 import { Checkout, Product } from "commerce-sdk";
 import Image from "next/image";
@@ -17,7 +17,6 @@ export default async function Page() {
 
   if (!session) return <p>error...</p>;
 
-  const { shopperCustomers } = composable;
 
   const baskets = await shopperCustomers.getCustomerBaskets({
     parameters: {
@@ -59,7 +58,6 @@ async function FullProducts({
   const session = await getSession();
   if (!basket.productItems || !session) return <p>empty...</p>;
 
-  const { shopperProducts } = composable;
 
   const products = await shopperProducts.getProducts({
     parameters: {

@@ -6,7 +6,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { getSession } from "@/lib/commerce";
-import composable from "@/lib/global";
+import { shopperSearch } from "@/lib/global";
 import { Search } from "commerce-sdk";
 import currency from "currency.js";
 import { isArray } from "lodash";
@@ -34,7 +34,6 @@ export default async function CategoryPage({
   if (!token) return <div>Error</div>;
 
   const { id } = params;
-  const { shopperSearch } = composable;
 
   if (!isArray(searchParams.refine)) {
     const refine = searchParams.refine!;

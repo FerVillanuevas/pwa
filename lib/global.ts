@@ -4,16 +4,29 @@ import {
   ShopperCustomers,
   ShopperExperience,
   ShopperGiftCertificates,
-  ShopperLogin,
   ShopperOrders,
   ShopperProducts,
   ShopperPromotions,
   ShopperSearch,
   ShopperSeo,
+  ShopperLogin,
 } from "commerce-sdk-isomorphic";
 
+const CLIENT_ID = process.env.CLIENT_ID;
+const ORG_ID = process.env.ORG_ID;
+const SHORT_CODE = process.env.SHORT_CODE;
+const SITE_ID = process.env.SITE_ID;
 
-import { config } from "./commerce";
+const config = {
+  headers: {},
+  parameters: {
+    clientId: CLIENT_ID,
+    organizationId: ORG_ID,
+    shortCode: SHORT_CODE,
+    siteId: SITE_ID,
+  },
+  throwOnBadResponse: true,
+};
 
 // --- API CLIENTS --- //
 export type ApiClientConfigParams = {
@@ -39,24 +52,14 @@ export interface ApiClients {
   shopperSeo: ShopperSeo<ApiClientConfigParams>;
 }
 
-//@ts-ignore
-let composable: ApiClients = global.composable;
-
-if (!composable) {
-  /* Init composable objects */
-  composable = {
-    shopperBaskets: new ShopperBaskets(config),
-    shopperContexts: new ShopperContexts(config),
-    shopperCustomers: new ShopperCustomers(config),
-    shopperExperience: new ShopperExperience(config),
-    shopperGiftCertificates: new ShopperGiftCertificates(config),
-    shopperLogin: new ShopperLogin(config),
-    shopperOrders: new ShopperOrders(config),
-    shopperProducts: new ShopperProducts(config),
-    shopperPromotions: new ShopperPromotions(config),
-    shopperSearch: new ShopperSearch(config),
-    shopperSeo: new ShopperSeo(config),
-  };
-}
-
-export default composable;
+export const shopperBaskets = new ShopperBaskets(config);
+export const shopperContexts = new ShopperContexts(config);
+export const shopperCustomers = new ShopperCustomers(config);
+export const shopperExperience = new ShopperExperience(config);
+export const shopperGiftCertificates = new ShopperGiftCertificates(config);
+export const shopperLogin = new ShopperLogin(config);
+export const shopperOrders = new ShopperOrders(config);
+export const shopperProducts = new ShopperProducts(config);
+export const shopperPromotions = new ShopperPromotions(config);
+export const shopperSearch = new ShopperSearch(config);
+export const shopperSeo = new ShopperSeo(config);
