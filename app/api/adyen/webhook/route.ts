@@ -63,7 +63,12 @@ export const POST = async (req: NextRequest) => {
 
   const orderNo = NotificationRequestItem.merchantReference;
 
-  const orders = new Checkout.Orders(config);
+  const orders = new Checkout.Orders({
+    ...config,
+    headers: {
+      Authorization: `Bearer ${json.access_token}`,
+    },
+  });
 
   await orders.updateOrderConfirmationStatus({
     parameters: {
@@ -71,7 +76,7 @@ export const POST = async (req: NextRequest) => {
     },
     body: {
       status: ORDER.CONFIRMATION_STATUS_CONFIRMED,
-    },
+    }
   });
 
   await orders.updateOrderPaymentStatus({
@@ -80,11 +85,9 @@ export const POST = async (req: NextRequest) => {
     },
     body: {
       status: ORDER.PAYMENT_STATUS_PAID,
-    },
-    headers: {
-      Authorization: `Bearer ${json.access_token}`,
-    },
+    }
   });
+
   await orders.updateOrderExportStatus({
     parameters: {
       orderNo,
