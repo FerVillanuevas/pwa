@@ -1,40 +1,33 @@
 "use client";
-import { Accordion, AccordionItem } from "@nextui-org/accordion";
 import type { Search } from "commerce-sdk";
-import { Checkbox } from "../ui/checkbox";
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "../ui/accordion";
 
 export default function Refinament({
-	refinaments,
-}: { refinaments: Search.ShopperSearch.ProductSearchRefinement[] }) {
-	return (
-		<Accordion>
-			{refinaments.map((refinament) => {
-				return (
-					<AccordionItem
-						key={refinament.attributeId}
-						aria-label={refinament.label}
-						title={refinament.label}
-					>
-						<div className="space-y-2">
-							{refinament.values?.map(
-								(value: Search.ShopperSearch.ProductSearchRefinementValue) => {
-									return (
-										<div key={value.value} className="flex items-center space-x-2">
-											<Checkbox id={value.value} />
-											<label
-												htmlFor={value.value}
-												className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-											>
-												{value.label}
-											</label>
-										</div>
-									);
-								},
-							)}
-						</div>
-					</AccordionItem>
-				);
-			})}
-		</Accordion>
-	);
+  refinaments,
+}: {
+  refinaments: Search.ShopperSearch.ProductSearchRefinement[];
+}) {
+  return (
+    <Accordion type="single" collapsible className="w-full">
+      {refinaments?.map(
+        (refinament: Search.ShopperSearch.ProductSearchRefinement) => {
+          return (
+            <AccordionItem key={refinament.id} value={refinament.id}>
+              <AccordionTrigger>{refinament.name}</AccordionTrigger>
+              <AccordionContent className="flex flex-col">
+                {refinament.values?.map((value) => {
+                  return <p key={value.value}>{value.label}</p>;
+                })}
+              </AccordionContent>
+            </AccordionItem>
+          );
+        }
+      )}
+    </Accordion>
+  );
 }

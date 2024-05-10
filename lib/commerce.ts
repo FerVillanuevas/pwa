@@ -6,12 +6,13 @@ import {
 
 import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
+import { shopperLogin } from "./global";
 
-export const CLIENT_ID = "da422690-7800-41d1-8ee4-3ce983961078";
-export const CLIENT_SECRET = "D*HHUrgO2%qADp2JTIUi";
-export const ORG_ID = "f_ecom_zzte_053";
-export const SHORT_CODE = "kv7kzm78";
-export const SITE_ID = "RefArch";
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
+const ORG_ID = process.env.ORG_ID;
+const SHORT_CODE = process.env.SHORT_CODE;
+const SITE_ID = process.env.SITE_ID;
 
 const SESSION_KEY = "cnx-session";
 const REFRESH_TOKEN_KEY = "cnx-refresh";
@@ -169,5 +170,3 @@ export async function getGuestUserAuthToken(request: NextRequest) {
 
   return response;
 }
-
-

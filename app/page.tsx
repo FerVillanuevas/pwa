@@ -7,7 +7,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { getSession } from "@/lib/commerce";
-import composable from "@/lib/global";
+import { shopperSearch } from "@/lib/global";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -25,9 +25,7 @@ export default async function Home() {
 async function ProductCarousel() {
   const token = await getSession();
 
-  const { shopperSearch: searchClient } = composable;
-
-  const searchResults = await searchClient.productSearch({
+  const searchResults = await shopperSearch.productSearch({
     parameters: { q: "dress", limit: 8 },
     headers: {
       authorization: `Bearer ${token?.access_token}`,
@@ -41,9 +39,9 @@ async function ProductCarousel() {
           {searchResults?.hits?.map((hit) => (
             <CarouselItem
               key={hit.productId}
-              className="pl-1 md:basis-1/2 lg:basis-1/3"
+              className="pl-1 md:basis-1/2 lg:basis-1/4"
             >
-               <Link href={`/product/${hit.productId}`} className="p-1">
+              <Link href={`/product/${hit.productId}`} className="p-1">
                 <Card className="overflow-hidden">
                   <CardContent className="flex aspect-square items-center justify-center p-0 ">
                     <Image

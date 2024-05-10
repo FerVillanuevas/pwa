@@ -13,11 +13,15 @@ import { persistObservable } from "@legendapp/state/persist";
 import { persistPluginQuery } from "@legendapp/state/persist-plugins/query";
 
 import axios from "axios";
+import { enableReactTracking } from "@legendapp/state/config/enableReactTracking";
 
 // Global configuration
 configureObservablePersistence({
   pluginLocal: ObservablePersistLocalStorage,
 });
+
+enableReactTracking({ auto: true });
+
 
 export default function QueryProvider({
   children,
