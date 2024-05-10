@@ -33,15 +33,16 @@ export const POST = async (req: NextRequest) => {
       process.env.ADYEN_HMAC_KEY!
     )
   ) {
-    throw new Error();
-  }
-
-  if (NotificationRequestItem.success !== "true") {
-    throw new Error();
+    return NextResponse.json(
+      {
+        message: "Unauthorized",
+      },
+      { status: 404 }
+    );
   }
 
   const base64data = Buffer.from(
-    `eb2ac72a-a770-4823-ad76-987ba1619a2a:s5meDzHe4hkGAxog`
+    `${process.env.SFCC_CLIENT_ID}:${process.env.SFCC_CLIENT_SECRET}`
   ).toString("base64");
 
   const res = await fetch(
@@ -70,13 +71,42 @@ export const POST = async (req: NextRequest) => {
     },
   });
 
+  if (NotificationRequestItem.success !== "true") {
+    await orders.updateOrderConfirmationStatus({
+      parameters: { orderNo },
+      body: {
+        status: ORDER.CONFIRMATION_STATUS_NOT_CONFIRMED,
+      },
+    });
+    await orders.updateOrderPaymentStatus({
+      parameters: { orderNo },
+      body: {
+        status: ORDER.PAYMENT_STATUS_NOT_PAID,
+      },
+    });
+    await orders.updateOrderExportStatus({
+      parameters: { orderNo },
+      body: {
+        status: ORDER.EXPORT_STATUS_NOT_EXPORTED,
+      },
+    });
+    await orders.updateOrderStatus({
+      parameters: { orderNo },
+      body: {
+        status: ORDER.ORDER_STATUS_FAILED,
+      },
+    });
+
+    return NextResponse.json({}, { status: 200 });
+  }
+
   await orders.updateOrderConfirmationStatus({
     parameters: {
       orderNo,
     },
     body: {
       status: ORDER.CONFIRMATION_STATUS_CONFIRMED,
-    }
+    },
   });
 
   await orders.updateOrderPaymentStatus({
@@ -85,7 +115,7 @@ export const POST = async (req: NextRequest) => {
     },
     body: {
       status: ORDER.PAYMENT_STATUS_PAID,
-    }
+    },
   });
 
   await orders.updateOrderExportStatus({
@@ -96,6 +126,7 @@ export const POST = async (req: NextRequest) => {
       status: ORDER.EXPORT_STATUS_READY,
     },
   });
+
   await orders.updateOrderStatus({
     parameters: {
       orderNo,
