@@ -3,7 +3,7 @@ import { hmacValidator } from "@adyen/api-library";
 import { Checkout } from "commerce-sdk";
 import { NextRequest, NextResponse } from "next/server";
 
-export const ORDER = {
+const ORDER = {
   ORDER_STATUS_CREATED: "created",
   ORDER_STATUS_NEW: "new",
   ORDER_STATUS_COMPLETED: "completed",

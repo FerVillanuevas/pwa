@@ -16,7 +16,7 @@ export default function AdyenCheckout({ methods }: { methods: JSON }) {
   const dropInRef = useRef<HTMLDivElement>();
 
   const { mutate } = useMutation({
-    mutationFn: async (state) => {
+    mutationFn: async (state: any) => {
       const data = await sumbitPayment({
         payment: {
           ...state.data,
@@ -35,11 +35,11 @@ export default function AdyenCheckout({ methods }: { methods: JSON }) {
   });
 
   const { mutate: onAdditionalDetails } = useMutation({
-    mutationFn: async (state) => {
-      const data = await submitAditionalDetails(
-        state.data,
-        basket.customerInfo?.customerId!
-      );
+    mutationFn: async (state: any) => {
+      const data = await submitAditionalDetails({
+        body: state.data,
+        customerId: basket.customerInfo?.customerId!,
+      });
       return data;
     },
     onSuccess: (res) => {
@@ -55,13 +55,13 @@ export default function AdyenCheckout({ methods }: { methods: JSON }) {
     analytics: {
       enabled: true, // Set to false to not send analytics data to Adyen.
     },
-    onSubmit: (state) => {
+    onSubmit: (state: any) => {
       mutate(state);
     },
-    onAdditionalDetails: (state) => {
+    onAdditionalDetails: (state: any) => {
       onAdditionalDetails(state);
     },
-    onChange: (state) => {
+    onChange: (state: any) => {
       if (state.isValid) {
         console.log(state.data);
       }
@@ -82,8 +82,6 @@ export default function AdyenCheckout({ methods }: { methods: JSON }) {
     const createCheckout = async () => {
       //@ts-ignore
       const checkout = await AdyenCheckoutPrimitive(configuration);
-
-      checkout.submitDetails();
 
       checkout
         .create("dropin", {

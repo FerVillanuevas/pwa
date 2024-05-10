@@ -10,14 +10,15 @@ import {
   ShopperSearch,
   ShopperSeo,
   ShopperLogin,
+  ClientConfigInit,
 } from "commerce-sdk-isomorphic";
 
 const CLIENT_ID = process.env.CLIENT_ID;
 const ORG_ID = process.env.ORG_ID;
 const SHORT_CODE = process.env.SHORT_CODE;
 const SITE_ID = process.env.SITE_ID;
-
-const config = {
+ 
+const config: any = {
   headers: {},
   parameters: {
     clientId: CLIENT_ID,

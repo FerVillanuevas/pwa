@@ -50,7 +50,6 @@ export default function ShippingAddress({ step }: { step: StepStatus }) {
   const basket = store$.basket.get();
 
   const form = useForm({
-    defaultValues: basket?.shipments?.[0].shippingAddress,
     resolver,
   });
 

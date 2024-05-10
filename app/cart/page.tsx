@@ -8,18 +8,21 @@ import { Suspense } from "react";
 
 import Link from "@/components/commerce/Link";
 import dynamic from "next/dynamic";
-const BasketSummary = dynamic(() => import("@/components/commerce/basket-summary"), {
-  loading: () => <p>loading...</p>,
-});
+const BasketSummary = dynamic(
+  () => import("@/components/commerce/basket-summary"),
+  {
+    loading: () => <p>loading...</p>,
+  }
+);
 
 export default async function Page() {
   const session = await getSession();
 
   if (!session) return <p>error...</p>;
 
-
   const baskets = await shopperCustomers.getCustomerBaskets({
     parameters: {
+      //@ts-ignore
       customerId: session.customer_id,
     },
     headers: {
@@ -57,7 +60,6 @@ async function FullProducts({
 }) {
   const session = await getSession();
   if (!basket.productItems || !session) return <p>empty...</p>;
-
 
   const products = await shopperProducts.getProducts({
     parameters: {
