@@ -5,7 +5,6 @@ import { ObservablePersistLocalStorage } from "@legendapp/state/persist-plugins/
 import {
   QueryClient,
   QueryClientProvider,
-  useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 import { store$ } from "@/lib/state/store";
@@ -14,6 +13,7 @@ import { persistPluginQuery } from "@legendapp/state/persist-plugins/query";
 
 import axios from "axios";
 import { enableReactTracking } from "@legendapp/state/config/enableReactTracking";
+import { customer$ } from "@/lib/state/customer";
 
 // Global configuration
 configureObservablePersistence({
@@ -21,7 +21,6 @@ configureObservablePersistence({
 });
 
 enableReactTracking({ auto: true });
-
 
 export default function QueryProvider({
   children,
@@ -53,6 +52,10 @@ function StateProvider({ children }: { children: React.ReactNode }) {
         },
       },
     }),
+  });
+
+  persistObservable(customer$, {
+    local: "customer",
   });
 
   return children;

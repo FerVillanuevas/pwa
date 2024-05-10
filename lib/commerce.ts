@@ -1,3 +1,4 @@
+import { ShopperLogin, ShopperLoginTypes } from "commerce-sdk-isomorphic";
 import { type JWTPayload, SignJWT, jwtVerify } from "jose";
 import {
   RequestCookies,
@@ -6,7 +7,6 @@ import {
 
 import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
-import { shopperLogin } from "./global";
 
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
@@ -16,6 +16,12 @@ const SITE_ID = process.env.SITE_ID;
 
 const SESSION_KEY = "cnx-session";
 const REFRESH_TOKEN_KEY = "cnx-refresh";
+const USID_KEY = "cnx-usid";
+
+export enum AuthTypes {
+  Guest,
+  Creadentials,
+}
 
 export const config = {
   headers: {},
@@ -54,6 +60,47 @@ export async function getSession() {
   return await decrypt(session);
 }
 
+export const handleToken = async (
+  token: ShopperLoginTypes.TokenResponse,
+  type: AuthTypes
+) => {
+  const exp = Date.now() + 1800 * 1000;
+  const expRefresh = Date.now() + 2592000 * 1000;
+
+  const encSession = await encrypt(
+    {
+      access_token: token.access_token,
+      customer_id: token.customer_id,
+      type: type,
+    },
+    exp
+  );
+
+  const encRefresh = await encrypt(
+    {
+      refresh_token: token.refresh_token,
+      exp: 2592000,
+      type: type,
+    },
+    expRefresh
+  );
+
+  cookies().set(USID_KEY, token.usid as string, {
+    httpOnly: true,
+    expires: exp,
+  });
+
+  cookies().set(SESSION_KEY, encSession, {
+    httpOnly: true,
+    expires: exp,
+  });
+
+  cookies().set(REFRESH_TOKEN_KEY, encRefresh, {
+    httpOnly: true,
+    expires: expRefresh,
+  });
+};
+
 /**
  * Copy cookies from the Set-Cookie header of the response to the Cookie header of the request,
  * so that it will appear to SSR/RSC as if the user already has the new cookies.
@@ -81,22 +128,35 @@ export function applySetCookie(req: NextRequest, res: NextResponse): void {
   });
 }
 
-async function storeToken(
+export async function storeToken(
   token: JWTPayload,
-  request: NextRequest,
-  response: NextResponse
+  response: NextResponse,
+  type?: AuthTypes
 ) {
   const exp = Date.now() + 1800 * 1000;
   const expRefresh = Date.now() + 2592000 * 1000;
 
-  const encSession = await encrypt(token, exp);
+  const encSession = await encrypt(
+    {
+      access_token: token.access_token,
+      customer_id: token.customer_id,
+      type: type || AuthTypes.Guest,
+    },
+    exp
+  );
   const encRefresh = await encrypt(
     {
       refresh_token: token.refresh_token,
       exp: 2592000,
+      type: type || AuthTypes.Guest,
     },
     expRefresh
   );
+
+  response.cookies.set(USID_KEY, token.usid as string, {
+    httpOnly: true,
+    expires: exp,
+  });
 
   response.cookies.set(SESSION_KEY, encSession, {
     httpOnly: true,
@@ -143,7 +203,7 @@ export async function getGuestUserAuthToken(request: NextRequest) {
 
     const token = await res.json();
 
-    await storeToken(token, request, response);
+    await storeToken(token, response, decryptToken.type as AuthTypes);
 
     applySetCookie(request, response);
 
@@ -164,7 +224,7 @@ export async function getGuestUserAuthToken(request: NextRequest) {
 
   const token = await res.json();
 
-  await storeToken(token, request, response);
+  await storeToken(token, response);
 
   applySetCookie(request, response);
 

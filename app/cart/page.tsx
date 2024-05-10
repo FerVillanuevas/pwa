@@ -35,14 +35,14 @@ export default async function Page() {
   if (!basket) return <p>Empty...</p>;
 
   return (
-    <div className="container">
-      <div className="grid grid-cols-6 gap-4">
-        <div className="col-span-4">
+    <div className="container py-6 md:py-4">
+      <div className="grid md:grid-cols-6 gap-4">
+        <div className="md:col-span-4">
           <Suspense fallback={<p>loading...</p>}>
             <FullProducts basket={basket} />
           </Suspense>
         </div>
-        <div className="col-span-2 ">
+        <div className="md:col-span-2">
           <BasketSummary />
           <Link href={"/checkout"} variant="default">
             Checkout

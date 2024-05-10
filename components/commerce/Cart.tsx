@@ -14,11 +14,11 @@ export default function Cart() {
         href="/cart"
         variant="outline"
         size="icon"
-        className="justify-center w-auto px-1.5"
+        className="justify-center aspect-square"
       >
         <ShoppingBasketIcon className="h-[1.2rem] w-[1.2rem]" />
         {basket?.productItems?.length && (
-          <Badge variant="destructive" className="px-1 py-0.5">
+          <Badge variant="destructive" className="px-1 py-0.5 absolute -top-1 -right-1.5">
             {basket?.productItems.length}
           </Badge>
         )}

@@ -90,6 +90,7 @@ export default function AdyenCheckout({ methods }: { methods: JSON }) {
         .mount(dropInRef.current!);
     };
     dropInRef.current && createCheckout();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   //@ts-ignore
