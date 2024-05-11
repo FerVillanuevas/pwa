@@ -104,7 +104,7 @@ export default async function ProductView({ params, searchParams }: IParams) {
                 return (
                   <div key={variationAttribute.id} className="space-y-3">
                     <p className="capitalize">{variationAttribute.id}</p>
-                    <ul className="flex gap-3">
+                    <ul className="flex gap-3 flex-wrap">
                       {variationAttribute.values?.map(
                         ({ name, orderable, value }) => {
                           const sw = getVariantValueSwatch(product, value);
@@ -150,7 +150,7 @@ export default async function ProductView({ params, searchParams }: IParams) {
               return (
                 <div key={variationAttribute.id} className="space-y-3">
                   <p className="capitalize">{variationAttribute.id}</p>
-                  <ul className="flex gap-3">
+                  <ul className="flex gap-3 flex-wrap justify-between">
                     {variationAttribute.values?.map(
                       ({ name, orderable, value }) => {
                         const selected =

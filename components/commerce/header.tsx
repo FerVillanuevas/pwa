@@ -8,6 +8,7 @@ import SearchSheet from "./search-sheet";
 import dynamic from "next/dynamic";
 import LoginDialog from "./login-dialog";
 import CustomerMenu from "./customer-menu";
+import Logo from "./logo";
 
 const Cart = dynamic(() => import("./Cart"), {
   loading: () => <p>Loading...</p>,
@@ -45,7 +46,7 @@ export default async function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-14 items-center justify-between px-4 md:container">
         <MobileMenu categories={categories} subCategories={subCategories} />
-        <Link href="/">#Commer Arch</Link>
+        <Logo />
         <nav className="md:flex items-center gap-1 text-sm hidden">
           <NavigationMenu
             categories={categories}

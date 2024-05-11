@@ -1,3 +1,4 @@
+import MobileRefinaments from "@/components/commerce/mobile-refinaments";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -66,7 +67,7 @@ export default async function CategoryPage({
   return (
     <section className="pt-6 container">
       <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-4 ">
-        <div>
+        <div className="hidden md:block">
           {categoryRefinament && (
             <ul className="space-y-4 border-b pb-6 text-sm font-medium text-foreground">
               {categoryRefinament.values?.map((value) => {
@@ -122,7 +123,11 @@ export default async function CategoryPage({
         <div className="col-span-3">
           <h2 className="sr-only">Products</h2>
 
-          <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
+          <div className="grid py-4">
+            <MobileRefinaments refinaments={refinaments} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
             {products?.hits?.map((hit) => {
               return (
                 <Link
