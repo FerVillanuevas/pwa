@@ -10,6 +10,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import Logo from "./logo";
 
 export default function MobileMenu({
   categories,
@@ -28,13 +29,7 @@ export default function MobileMenu({
       </SheetTrigger>
       <SheetContent side="left">
         <nav className="grid gap-6 text-lg font-medium">
-          <Link
-            href="#"
-            className="flex items-center gap-2 text-lg font-semibold px-0"
-          >
-            <Package2 className="h-6 w-6" />
-            <span>Acme Inc</span>
-          </Link>
+          <Logo />
 
           <Accordion type="single" collapsible className="w-full">
             {categories?.map((category: Product.ShopperProducts.Category) => {

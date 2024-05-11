@@ -40,7 +40,7 @@ export default function LoginDialog() {
 
   const form = useForm({ resolver });
 
-  const { mutate } = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: loginAsB2C,
     onSuccess: (customer) => {
       customer$.customer.set(customer);
@@ -55,7 +55,7 @@ export default function LoginDialog() {
   return (
     <Dialog open={open} onOpenChange={(open) => setOpen(open)}>
       <DialogTrigger asChild>
-        <Button variant="outline">Edit Profile</Button>
+        <Button variant="outline">Login</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
@@ -98,7 +98,9 @@ export default function LoginDialog() {
             </div>
 
             <DialogFooter>
-              <Button type="submit">Save changes</Button>
+              <Button disabled={isPending} type="submit">
+                Login
+              </Button>
             </DialogFooter>
           </form>
         </Form>
