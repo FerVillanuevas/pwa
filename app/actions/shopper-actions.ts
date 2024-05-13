@@ -3,22 +3,16 @@
 import { loginFormData } from "@/components/commerce/login-dialog";
 import {
   AuthTypes,
-  applySetCookie,
-  encrypt,
   getSession,
+  getUSID,
   handleToken,
-  storeToken,
+  removeSessionCookie,
 } from "@/lib/commerce";
 import { shopperCustomers, shopperLogin } from "@/lib/global";
 import { helpers } from "commerce-sdk-isomorphic";
-import { cookies } from "next/headers";
-
-type Helpers = typeof helpers;
-
-helpers["loginRegisteredUserB2C"];
 
 export default async function loginAsB2C(formData: loginFormData) {
-  const session = await getSession();
+  const usid = await getUSID();
 
   try {
     const token = await helpers.loginRegisteredUserB2C(
@@ -30,7 +24,7 @@ export default async function loginAsB2C(formData: loginFormData) {
       },
       {
         redirectURI: "http://localhost:3000/callback",
-        usid: session?.usid,
+        usid: usid,
       }
     );
 
@@ -49,5 +43,24 @@ export default async function loginAsB2C(formData: loginFormData) {
     return customer;
   } catch (error) {
     console.log(error);
+  }
+}
+
+export async function getCustomer() {
+  const session = await getSession();
+
+  try {
+    let customer = await shopperCustomers.getCustomer({
+      parameters: {
+        //@ts-ignore
+        customerId: session.customer_id,
+      },
+      headers: {
+        Authorization: `Bearer ${session?.access_token}`,
+      },
+    });
+    return customer;
+  } catch (error) {
+    removeSessionCookie();
   }
 }

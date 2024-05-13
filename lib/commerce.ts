@@ -18,6 +18,21 @@ const SESSION_KEY = "cnx-session";
 const REFRESH_TOKEN_KEY = "cnx-refresh";
 const USID_KEY = "cnx-usid";
 
+type TSessionToken = {
+  access_token: string;
+  customer_id: string;
+  type: AuthTypes;
+  iat: number;
+  exp: number;
+};
+
+type TRefreshToken = {
+  refresh_token: string;
+  type: AuthTypes;
+  iat: number;
+  exp: number;
+};
+
 export enum AuthTypes {
   Guest,
   Creadentials,
@@ -47,18 +62,32 @@ export async function encrypt(
     .sign(key);
 }
 
-export async function decrypt(input: string): Promise<JWTPayload> {
-  const { payload } = await jwtVerify(input, key, {
+export async function decrypt<T>(input: string): Promise<T> {
+  const { payload } = await jwtVerify<T>(input, key, {
     algorithms: ["HS256"],
   });
   return payload;
 }
 
-export async function getSession() {
+export async function getSession(): Promise<TSessionToken | null> {
   const session = cookies().get(SESSION_KEY)?.value;
   if (!session) return null;
   return await decrypt(session);
 }
+
+export async function getUSID(): Promise<string | null> {
+  const usid = cookies().get(USID_KEY)?.value;
+  if (!usid) return null;
+  return usid;
+}
+
+export const removeSessionCookie = () => {
+  cookies().delete(USID_KEY);
+
+  cookies().delete(SESSION_KEY);
+
+  cookies().delete(REFRESH_TOKEN_KEY);
+};
 
 export const handleToken = async (
   token: ShopperLoginTypes.TokenResponse,
@@ -175,7 +204,7 @@ export async function getGuestUserAuthToken(request: NextRequest) {
   const refreshToken = request.cookies.get(REFRESH_TOKEN_KEY)?.value;
 
   if (session) {
-    return response;
+    return;
   }
 
   const base64data = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString(
@@ -183,31 +212,35 @@ export async function getGuestUserAuthToken(request: NextRequest) {
   );
 
   if (refreshToken) {
-    const decryptToken = await decrypt(refreshToken);
+    try {
+      const decryptToken = await decrypt<TRefreshToken>(refreshToken);
 
-    const res = await fetch(
-      `https://${SHORT_CODE}.api.commercecloud.salesforce.com/shopper/auth/v1/organizations/${ORG_ID}/oauth2/token`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Basic ${base64data}`,
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        //@ts-ignore
-        body: new URLSearchParams({
-          refresh_token: decryptToken.refresh_token,
-          grant_type: "refresh_token",
-        }),
-      }
-    );
+      const res = await fetch(
+        `https://${SHORT_CODE}.api.commercecloud.salesforce.com/shopper/auth/v1/organizations/${ORG_ID}/oauth2/token`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Basic ${base64data}`,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          //@ts-ignore
+          body: new URLSearchParams({
+            refresh_token: decryptToken.refresh_token,
+            grant_type: "refresh_token",
+          }),
+        }
+      );
 
-    const token = await res.json();
+      const token = await res.json();
 
-    await storeToken(token, response, decryptToken.type as AuthTypes);
+      await storeToken(token, response, decryptToken.type);
 
-    applySetCookie(request, response);
+      applySetCookie(request, response);
 
-    return response;
+      return response;
+    } catch (error) {
+      removeSessionCookie()
+    }
   }
 
   const res = await fetch(

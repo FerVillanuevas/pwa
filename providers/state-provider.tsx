@@ -14,6 +14,7 @@ import { persistPluginQuery } from "@legendapp/state/persist-plugins/query";
 import axios from "axios";
 import { enableReactTracking } from "@legendapp/state/config/enableReactTracking";
 import { customer$ } from "@/lib/state/customer";
+import { getCustomer } from "@/app/actions/shopper-actions";
 
 // Global configuration
 configureObservablePersistence({
@@ -56,6 +57,13 @@ function StateProvider({ children }: { children: React.ReactNode }) {
 
   persistObservable(customer$, {
     local: "customer",
+    pluginRemote: persistPluginQuery({
+      queryClient,
+      query: {
+        queryKey: () => ["customer"],
+        queryFn: getCustomer,
+      },
+    }),
   });
 
   return children;
