@@ -1,11 +1,10 @@
 "use server";
 
 import checkoutApi from "@/lib/adyen";
-import { shopperBaskets, shopperOrders } from "@/lib/global";
 import { Types } from "@adyen/api-library";
 import { v4 } from "uuid";
-import { getSession } from "@/lib/commerce";
 import axios from "axios";
+import { createClient } from "@/lib/commerce-kit";
 
 const PAYMENT_METHODS = {
   ADYEN_COMPONENT: "AdyenComponent",
@@ -61,19 +60,15 @@ export async function sumbitPayment({
   customerId: string;
 }) {
   try {
-    const session = await getSession();
+    const client = await createClient();
 
-
-    const basket = await shopperBaskets.getBasket({
+    const basket = await client.shopperBaskets.getBasket({
       parameters: {
         basketId,
       },
-      headers: {
-        authorization: `Bearer ${session?.access_token}`,
-      },
     });
 
-    await shopperBaskets.addPaymentInstrumentToBasket({
+    await client.shopperBaskets.addPaymentInstrumentToBasket({
       body: {
         amount: basket.orderTotal,
         paymentMethodId: PAYMENT_METHODS.ADYEN_COMPONENT,
@@ -84,17 +79,11 @@ export async function sumbitPayment({
       parameters: {
         basketId: basket.basketId!,
       },
-      headers: {
-        authorization: `Bearer ${session?.access_token}`,
-      },
     });
 
-    const order = await shopperOrders.createOrder({
+    const order = await client.shopperOrders.createOrder({
       body: {
         basketId: basket.basketId,
-      },
-      headers: {
-        authorization: `Bearer ${session?.access_token}`,
       },
     });
 
@@ -163,17 +152,14 @@ export async function submitAditionalDetails({
 }
 
 export async function continueAsGuest({ basketId, email }: any) {
-  const session = await getSession();
+  const client = await createClient();
 
-  const response = await shopperBaskets.updateCustomerForBasket({
+  const response = await client.shopperBaskets.updateCustomerForBasket({
     parameters: {
       basketId,
     },
     body: {
       email,
-    },
-    headers: {
-      authorization: `Bearer ${session?.access_token}`,
     },
   });
 
@@ -187,18 +173,15 @@ export async function updateShippingAddresss({
   basketId: string;
   shipping: any;
 }) {
-  const session = await getSession();
+  const client = await createClient();
 
-  shopperBaskets.updateShippingAddressForShipment({
+  await client.shopperBaskets.updateShippingAddressForShipment({
     parameters: {
       basketId: basketId,
       shipmentId: "me",
       useAsBilling: true,
     },
     body: shipping,
-    headers: {
-      authorization: `Bearer ${session?.access_token}`,
-    },
   });
 }
 
@@ -209,16 +192,13 @@ export async function getShippingMethods({
   basketId: string;
   shipmentId?: string;
 }) {
-  const session = await getSession();
+  const client = await createClient();
 
-  const response = await shopperBaskets.getShippingMethodsForShipment({
+  const response = await client.shopperBaskets.getShippingMethodsForShipment({
     parameters: {
       basketId,
       shipmentId,
-    },
-    headers: {
-      authorization: `Bearer ${session?.access_token}`,
-    },
+    }
   });
 
   return response;
@@ -233,19 +213,16 @@ export async function updateShippingMethod({
   shipmentId?: string;
   shippingMethodId: string;
 }) {
-  const session = await getSession();
+  const client = await createClient();
 
-  const response = await shopperBaskets.updateShippingMethodForShipment({
+  const response = await client.shopperBaskets.updateShippingMethodForShipment({
     parameters: {
       basketId,
       shipmentId,
     },
     body: {
       id: shippingMethodId,
-    },
-    headers: {
-      authorization: `Bearer ${session?.access_token}`,
-    },
+    }
   });
 
   return response;

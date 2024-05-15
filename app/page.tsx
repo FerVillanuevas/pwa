@@ -6,8 +6,9 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { getSession } from "@/lib/commerce";
-import { shopperSearch } from "@/lib/global";
+
+import { createClient } from "@/lib/commerce-kit";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -23,13 +24,10 @@ export default async function Home() {
 }
 
 async function ProductCarousel() {
-  const token = await getSession();
+  const client = await createClient();
 
-  const searchResults = await shopperSearch.productSearch({
+  const searchResults = await client.shopperSearch.productSearch({
     parameters: { q: "dress", limit: 8 },
-    headers: {
-      authorization: `Bearer ${token?.access_token}`,
-    },
   });
 
   return (

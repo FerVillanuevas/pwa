@@ -14,7 +14,7 @@ import { persistPluginQuery } from "@legendapp/state/persist-plugins/query";
 import axios from "axios";
 import { enableReactTracking } from "@legendapp/state/config/enableReactTracking";
 import { customer$ } from "@/lib/state/customer";
-import { getCustomer } from "@/app/actions/shopper-actions";
+import { getCustomer, setBasket } from "@/app/actions/shopper-actions";
 
 // Global configuration
 configureObservablePersistence({
@@ -45,12 +45,7 @@ function StateProvider({ children }: { children: React.ReactNode }) {
       queryClient,
       query: {
         queryKey: () => ["basket"],
-        queryFn: async () => {
-          const { data } = await axios.get("/api/basket");
-          return {
-            basket: data,
-          };
-        },
+        queryFn: setBasket,
       },
     }),
   });

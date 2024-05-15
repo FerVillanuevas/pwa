@@ -1,6 +1,4 @@
 import { ViewTypes } from "@/enums/product";
-import { getSession } from "@/lib/commerce";
-import { shopperCustomers, shopperProducts } from "@/lib/global";
 import { getImageByViewType } from "@/lib/utils/commerce";
 import { Checkout, Product } from "commerce-sdk";
 import Image from "next/image";
@@ -8,6 +6,7 @@ import { Suspense } from "react";
 
 import Link from "@/components/commerce/Link";
 import dynamic from "next/dynamic";
+import { createClient, getCustomerId } from "@/lib/commerce-kit";
 const BasketSummary = dynamic(
   () => import("@/components/commerce/basket-summary"),
   {
@@ -16,17 +15,13 @@ const BasketSummary = dynamic(
 );
 
 export default async function Page() {
-  const session = await getSession();
+  const client = await createClient();
+  const customerId = await getCustomerId();
 
-  if (!session) return <p>error...</p>;
-
-  const baskets = await shopperCustomers.getCustomerBaskets({
+  const baskets = await client.shopperCustomers.getCustomerBaskets({
     parameters: {
       //@ts-ignore
-      customerId: session.customer_id,
-    },
-    headers: {
-      authorization: `Bearer ${session.access_token}`,
+      customerId: customerId,
     },
   });
 
@@ -58,16 +53,13 @@ async function FullProducts({
 }: {
   basket: Checkout.ShopperBaskets.Basket;
 }) {
-  const session = await getSession();
-  if (!basket.productItems || !session) return <p>empty...</p>;
+  const client = await createClient();
+  if (!basket.productItems) return <p>empty...</p>;
 
-  const products = await shopperProducts.getProducts({
+  const products = await client.shopperProducts.getProducts({
     parameters: {
       ids: basket.productItems.map(({ productId }) => productId).join(","),
       allImages: true,
-    },
-    headers: {
-      authorization: `Bearer ${session.access_token}`,
     },
   });
 

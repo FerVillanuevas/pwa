@@ -1,34 +1,27 @@
-import { getSession } from "@/lib/commerce";
-import { shopperBaskets, shopperCustomers } from "@/lib/global";
+import { createClient, getCustomerId } from "@/lib/commerce-kit";
 import { Checkout } from "commerce-sdk";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-  const token = await getSession();
+  const client = await createClient();
+  const customerId = await getCustomerId();
   let basket: Checkout.ShopperBaskets.Basket | null;
 
-
-  const baskets = await shopperCustomers.getCustomerBaskets({
+  const baskets = await client.shopperCustomers.getCustomerBaskets({
     parameters: {
       //@ts-ignore
-      customerId: token?.customer_id,
-    },
-    headers: {
-      authorization: `Bearer ${token?.access_token}`,
+      customerId: customerId,
     },
   });
 
   if (baskets.total === 0) {
-    basket = await shopperBaskets.createBasket({
+    basket = await client.shopperBaskets.createBasket({
       body: {
         customerInfo: {
           email: "",
           //@ts-ignore
-          customerId: token?.customer_id,
+          customerId: customerId,
         },
-      },
-      headers: {
-        authorization: `Bearer ${token?.access_token}`,
       },
     });
   } else {

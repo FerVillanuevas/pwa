@@ -6,14 +6,13 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { ViewTypes } from "@/enums/product";
-import { getSession } from "@/lib/commerce";
 import { cn } from "@/lib/utils";
 import { getVariantValueSwatch } from "@/lib/utils/commerce";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import CartAction from "../components/cart-action";
-import { shopperProducts } from "@/lib/global";
+import { createClient } from "@/lib/commerce-kit";
 
 interface IParams {
   params: { id: string };
@@ -23,14 +22,10 @@ interface IParams {
 export default async function ProductView({ params, searchParams }: IParams) {
   const { pid, color } = searchParams;
 
-  const token = await getSession();
+  const client = await createClient();
 
-
-  const product = await shopperProducts.getProduct({
+  const product = await client.shopperProducts.getProduct({
     parameters: { id: pid || params.id, allImages: true },
-    headers: {
-      authorization: `Bearer ${token?.access_token}`,
-    },
     //@ts-ignore
     next: { tags: ["product", pid] }
   });

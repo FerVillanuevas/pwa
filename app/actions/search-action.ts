@@ -1,35 +1,27 @@
 "use server";
 
-import { getSession } from "@/lib/commerce";
-import { shopperSearch } from "@/lib/global";
+import { createClient } from "@/lib/commerce-kit";
 
 export async function ProductSearch({ query }: { query?: string }) {
-  const token = await getSession();
+  const client = await createClient();
 
-
-  const suggestions = shopperSearch.productSearch({
+  const suggestions = await client.shopperSearch.productSearch({
     parameters: {
       q: query,
-    },
-    headers: {
-      authorization: `Bearer ${token?.access_token}`,
-    },
+    }
   });
 
   return suggestions;
 }
 
 export default async function SearchSuggestions({ query }: { query?: string }) {
-  const token = await getSession();
+  const client = await createClient();
 
 
-  const suggestions = shopperSearch.getSearchSuggestions({
+  const suggestions = await client.shopperSearch.getSearchSuggestions({
     parameters: {
       q: query || "t shirt",
-    },
-    headers: {
-      authorization: `Bearer ${token?.access_token}`,
-    },
+    }
   });
 
   return suggestions;

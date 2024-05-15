@@ -1,17 +1,32 @@
 "use server";
 
 import { loginFormData } from "@/components/commerce/login-dialog";
+
 import {
-  AuthTypes,
-  getSession,
-  getUSID,
-  handleToken,
+  createClient,
   removeSessionCookie,
-} from "@/lib/commerce";
-import { shopperCustomers, shopperLogin } from "@/lib/global";
-import { helpers } from "commerce-sdk-isomorphic";
+  getUSID,
+  AuthTypes,
+  getToken,
+  getCustomerId,
+  encrypt,
+  CUSTOMER_KEY,
+  USID_KEY,
+  SESSION_KEY,
+  REFRESH_TOKEN_KEY,
+  handleToken,
+} from "@/lib/commerce-kit";
+
+import {
+  ShopperBasketsTypes,
+  ShopperLoginTypes,
+  helpers,
+} from "commerce-sdk-isomorphic";
+import { cookies } from "next/headers";
 
 export default async function loginAsB2C(formData: loginFormData) {
+  const client = await createClient();
+
   const usid = await getUSID();
 
   try {
@@ -24,19 +39,17 @@ export default async function loginAsB2C(formData: loginFormData) {
       },
       {
         redirectURI: "http://localhost:3000/callback",
+        //@ts-ignore
         usid: usid,
       }
     );
 
     await handleToken(token, AuthTypes.Creadentials);
 
-    const customer = await shopperCustomers.getCustomer({
+    const customer = await client.shopperCustomers.getCustomer({
       parameters: {
         //@ts-ignore
         customerId: token.customer_id,
-      },
-      headers: {
-        Authorization: `Bearer ${token?.access_token}`,
       },
     });
 
@@ -47,16 +60,13 @@ export default async function loginAsB2C(formData: loginFormData) {
 }
 
 export async function getCustomer() {
-  const session = await getSession();
+  const client = await createClient();
 
   try {
-    let customer = await shopperCustomers.getCustomer({
+    let customer = await client.shopperCustomers.getCustomer({
       parameters: {
         //@ts-ignore
         customerId: session.customer_id,
-      },
-      headers: {
-        Authorization: `Bearer ${session?.access_token}`,
       },
     });
     return customer;
@@ -64,3 +74,75 @@ export async function getCustomer() {
     removeSessionCookie();
   }
 }
+
+export async function setBasket() {
+  const client = await createClient();
+  const customerId = await getCustomerId();
+  let basket: ShopperBasketsTypes.Basket | null;
+
+  const baskets = await client.shopperCustomers.getCustomerBaskets({
+    parameters: {
+      //@ts-ignore
+      customerId: customerId,
+    },
+  });
+
+  if (baskets.total === 0) {
+    basket = await client.shopperBaskets.createBasket({
+      body: {
+        customerInfo: {
+          email: "",
+          //@ts-ignore
+          customerId: customerId,
+        },
+      },
+    });
+  } else {
+    basket = baskets.baskets?.[0] || null;
+  }
+
+  return basket;
+}
+
+export const getGuestToken = async () => {
+  const token = await getToken();
+  const exp = Date.now() + 1800 * 1000;
+  const expRefresh = Date.now() + 2592000 * 1000;
+
+  const encSession = await encrypt(
+    {
+      access_token: token.access_token,
+      type: AuthTypes.Guest,
+    },
+    exp
+  );
+
+  const encRefresh = await encrypt(
+    {
+      refresh_token: token.refresh_token,
+      exp: 2592000,
+      type: AuthTypes.Guest,
+    },
+    expRefresh
+  );
+
+  cookies().set(CUSTOMER_KEY, token.customer_id as string, {
+    httpOnly: true,
+    expires: exp,
+  });
+
+  cookies().set(USID_KEY, token.usid as string, {
+    httpOnly: true,
+    expires: exp,
+  });
+
+  cookies().set(SESSION_KEY, encSession, {
+    httpOnly: true,
+    expires: exp,
+  });
+
+  cookies().set(REFRESH_TOKEN_KEY, encRefresh, {
+    httpOnly: true,
+    expires: expRefresh,
+  });
+};

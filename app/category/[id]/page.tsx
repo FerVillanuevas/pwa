@@ -6,8 +6,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { getSession } from "@/lib/commerce";
-import { shopperSearch } from "@/lib/global";
+import { createClient } from "@/lib/commerce-kit";
 import { Search } from "commerce-sdk";
 import currency from "currency.js";
 import { isArray } from "lodash";
@@ -31,8 +30,7 @@ export default async function CategoryPage({
   params,
   searchParams,
 }: ICategoryPage) {
-  const token = await getSession();
-  if (!token) return <div>Error</div>;
+  const client = await createClient();
 
   const { id } = params;
 
@@ -43,13 +41,10 @@ export default async function CategoryPage({
     searchParams.refine = [...searchParams.refine, `cgid=${id}`];
   }
 
-  const products = await shopperSearch.productSearch({
+  const products = await client.shopperSearch.productSearch({
     //@ts-ignore
     parameters: {
       ...searchParams,
-    },
-    headers: {
-      authorization: `Bearer ${token.access_token}`,
     },
     next: { tags: ["category", id] },
   });

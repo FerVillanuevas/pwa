@@ -1,20 +1,16 @@
-import { getSession } from "@/lib/commerce";
-import { shopperCustomers } from "@/lib/global";
+import { createClient } from "@/lib/commerce-kit";
 import { redirect } from "next/navigation";
 
 export default async function ProfilePage() {
-  const session = await getSession();
+  const client = await createClient();
 
   let customer;
   try {
-    customer = await shopperCustomers.getCustomer({
+    customer = await client.shopperCustomers.getCustomer({
       parameters: {
         //@ts-ignore
         customerId: session.customer_id,
-      },
-      headers: {
-        Authorization: `Bearer ${session?.access_token}`,
-      },
+      }
     });
   } catch (error) {
     return redirect("/");

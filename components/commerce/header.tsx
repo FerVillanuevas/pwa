@@ -1,45 +1,37 @@
-import { AuthTypes, getSession } from "@/lib/commerce";
+import { AuthTypes } from "@/lib/commerce";
 import { ModeToggle } from "../mode-toggle";
-import Link from "./Link";
 import { NavigationMenu } from "./NavigationMenu";
-import { shopperProducts } from "@/lib/global";
 import MobileMenu from "./mobile-menu";
 import SearchSheet from "./search-sheet";
 import dynamic from "next/dynamic";
 import LoginDialog from "./login-dialog";
 import CustomerMenu from "./customer-menu";
 import Logo from "./logo";
+import { createClient, getSession } from "@/lib/commerce-kit";
 
 const Cart = dynamic(() => import("./Cart"), {
   loading: () => <p>Loading...</p>,
 });
 
 export default async function Header() {
+  const client = await createClient();
   const session = await getSession();
 
-  if (!session) return <div>empty</div>;
-
-  const { categories } = await shopperProducts.getCategory({
+  const { categories } = await client.shopperProducts.getCategory({
     parameters: {
       id: "root",
       levels: 1,
-    },
-    headers: {
-      authorization: `Bearer ${session.access_token}`,
-    },
+    }
   });
 
   const ids = categories?.flatMap((cat) => cat.id);
 
-  const { data: subCategories } = await shopperProducts.getCategories({
+  const { data: subCategories } = await client.shopperProducts.getCategories({
     parameters: {
       //@ts-ignore
       ids: ids?.join(),
       levels: 2,
-    },
-    headers: {
-      authorization: `Bearer ${session.access_token}`,
-    },
+    }
   });
 
   return (

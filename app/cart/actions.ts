@@ -1,19 +1,14 @@
 "use server";
 
-import { getSession } from "@/lib/commerce";
-import { shopperBaskets, shopperProducts } from "@/lib/global";
+import { createClient } from "@/lib/commerce-kit";
 
 export async function getProducts(ids: string) {
-  const token = await getSession();
+  const client = await createClient();
 
-
-  const products = await shopperProducts.getProducts({
+  const products = await client.shopperProducts.getProducts({
     parameters: {
       ids: ids,
       allImages: true,
-    },
-    headers: {
-      authorization: `Bearer ${token?.access_token}`,
     },
   });
 
@@ -21,15 +16,11 @@ export async function getProducts(ids: string) {
 }
 
 export default async function getBasket(basketId: string) {
-  const token = await getSession();
+  const client = await createClient();
 
-
-  const basket = await shopperBaskets.getBasket({
+  const basket = await client.shopperBaskets.getBasket({
     parameters: {
       basketId: basketId,
-    },
-    headers: {
-      authorization: `Bearer ${token?.access_token}`,
     },
   });
 

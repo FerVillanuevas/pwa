@@ -1,17 +1,15 @@
 "use server";
 
-import { getSession } from "@/lib/commerce";
-import { shopperBaskets } from "@/lib/global";
+import { createClient } from "@/lib/commerce-kit";
 import { revalidateTag } from "next/cache";
 
 export default async function AddToBasketAction(
   basketId: string,
   product: any
 ) {
-  const token = await getSession();
+  const client = await createClient();
 
-
-  const basket = shopperBaskets.addItemToBasket({
+  const basket = client.shopperBaskets.addItemToBasket({
     parameters: {
       basketId: basketId,
     },
@@ -21,10 +19,7 @@ export default async function AddToBasketAction(
         price: product.price,
         quantity: 1,
       },
-    ],
-    headers: {
-      authorization: `Bearer ${token?.access_token}`,
-    },
+    ]
   });
 
   revalidateTag('basket');
