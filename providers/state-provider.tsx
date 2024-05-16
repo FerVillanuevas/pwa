@@ -45,7 +45,9 @@ function StateProvider({ children }: { children: React.ReactNode }) {
       queryClient,
       query: {
         queryKey: () => ["basket"],
-        queryFn: setBasket,
+        queryFn: async () => {
+          await setBasket();
+        },
       },
     }),
   });

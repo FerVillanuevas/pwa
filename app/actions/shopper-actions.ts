@@ -8,7 +8,6 @@ import {
   getUSID,
   AuthTypes,
   getToken,
-  getCustomerId,
   encrypt,
   CUSTOMER_KEY,
   USID_KEY,
@@ -17,11 +16,7 @@ import {
   handleToken,
 } from "@/lib/commerce-kit";
 
-import {
-  ShopperBasketsTypes,
-  ShopperLoginTypes,
-  helpers,
-} from "commerce-sdk-isomorphic";
+import { ShopperBasketsTypes, helpers } from "commerce-sdk-isomorphic";
 import { cookies } from "next/headers";
 
 export default async function loginAsB2C(formData: loginFormData) {
@@ -61,12 +56,13 @@ export default async function loginAsB2C(formData: loginFormData) {
 
 export async function getCustomer() {
   const client = await createClient();
+  const usid = await getUSID();
 
   try {
     let customer = await client.shopperCustomers.getCustomer({
       parameters: {
         //@ts-ignore
-        customerId: session.customer_id,
+        customerId: usid?.customerId,
       },
     });
     return customer;
@@ -77,13 +73,14 @@ export async function getCustomer() {
 
 export async function setBasket() {
   const client = await createClient();
-  const customerId = await getCustomerId();
+  const customer = await getUSID();
+
   let basket: ShopperBasketsTypes.Basket | null;
 
   const baskets = await client.shopperCustomers.getCustomerBaskets({
     parameters: {
       //@ts-ignore
-      customerId: customerId,
+      customerId: customer?.customerId,
     },
   });
 
@@ -93,7 +90,7 @@ export async function setBasket() {
         customerInfo: {
           email: "",
           //@ts-ignore
-          customerId: customerId,
+          customerId: customer?.customerId,
         },
       },
     });

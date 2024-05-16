@@ -1,7 +1,5 @@
 import "server-only";
 
-import { kv } from "@vercel/kv";
-
 import { JWTPayload, SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
@@ -17,24 +15,17 @@ import {
   ShopperSearch,
   ShopperSeo,
   ShopperLogin,
-  ClientConfigInit,
   ShopperLoginTypes,
 } from "commerce-sdk-isomorphic";
-import { NextResponse } from "next/server";
-import { TokenResponse } from "commerce-sdk/dist/helpers/slasClient";
 
 export type TSessionToken = {
   access_token: string;
-  customer_id: string;
   type: AuthTypes;
-  iat: number;
-  exp: number;
 };
 
 export type TRefreshToken = {
   refresh_token: string;
   type: AuthTypes;
-  iat: number;
   exp: number;
 };
 
@@ -63,31 +54,31 @@ export const handleToken = async (
   const exp = Date.now() + 1800 * 1000;
   const expRefresh = Date.now() + 2592000 * 1000;
 
-  await kv.set(
+  cookies().set(
     SESSION_KEY,
-    {
+    JSON.stringify({
       access_token: token.access_token,
       type: type || AuthTypes.Guest,
-    },
-    { ex: exp }
+    }),
+    { expires: exp }
   );
-  await kv.set(
+  cookies().set(
     CUSTOMER_KEY,
-    {
+    JSON.stringify({
       customerId: token.customer_id,
       usid: token.usid,
-    },
-    { ex: expRefresh }
+    }),
+    { expires: expRefresh }
   );
 
-  await kv.set(
+  cookies().set(
     REFRESH_TOKEN_KEY,
-    {
+    JSON.stringify({
       refresh_token: token.refresh_token,
       exp: 2592000,
       type: type || AuthTypes.Guest,
-    },
-    { ex: expRefresh }
+    }),
+    { expires: expRefresh }
   );
 };
 
@@ -95,15 +86,9 @@ export async function getUSID(): Promise<{
   usid: string;
   customerId: string;
 } | null> {
-  const usid = await kv.get<{ usid: string; customerId: string }>(CUSTOMER_KEY);
-  if (!usid) return null;
-  return usid;
-}
-
-export async function getCustomerId(): Promise<string | null> {
   const usid = cookies().get(CUSTOMER_KEY)?.value;
   if (!usid) return null;
-  return usid;
+  return JSON.parse(usid);
 }
 
 export async function encrypt(
@@ -125,7 +110,7 @@ export async function decrypt<T>(input: string): Promise<T> {
 }
 
 export const removeSessionCookie = async () => {
-  await kv.del(REFRESH_TOKEN_KEY, SESSION_KEY);
+  /* await kv.del(REFRESH_TOKEN_KEY, SESSION_KEY); */
 };
 
 export async function getToken() {
@@ -185,18 +170,17 @@ export async function getToken() {
 }
 
 export async function getSession() {
-  const session = await kv.get(SESSION_KEY);
-  if (session) session;
-  const token = await getToken();
-  return token;
+  const session = cookies().get(SESSION_KEY)?.value;
+  if (session) {
+    return await decrypt<TSessionToken>(session);
+  }
 }
 
 export async function createClient() {
   const session = await getSession();
-
   const config: any = {
     headers: {
-      Authorization: `Bearer ${session.access_token}`,
+      Authorization: `Bearer ${session?.access_token}`,
     },
     parameters: {
       clientId: CLIENT_ID,

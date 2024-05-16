@@ -14,9 +14,11 @@ const ORG_ID = process.env.ORG_ID;
 const SHORT_CODE = process.env.SHORT_CODE;
 const SITE_ID = process.env.SITE_ID;
 
-const SESSION_KEY = "cnx-session";
-const REFRESH_TOKEN_KEY = "cnx-refresh";
-const USID_KEY = "cnx-usid";
+ const SESSION_KEY = "cnx-session";
+ const REFRESH_TOKEN_KEY = "cnx-refresh";
+ const USID_KEY = "cnx-usid";
+ const CUSTOMER_KEY = "cnx-customer";
+;
 
 type TSessionToken = {
   access_token: string;
@@ -134,29 +136,6 @@ export const handleToken = async (
  * Copy cookies from the Set-Cookie header of the response to the Cookie header of the request,
  * so that it will appear to SSR/RSC as if the user already has the new cookies.
  */
-export function applySetCookie(req: NextRequest, res: NextResponse): void {
-  // parse the outgoing Set-Cookie header
-  const setCookies = new ResponseCookies(res.headers);
-  // Build a new Cookie header for the request by adding the setCookies
-  const newReqHeaders = new Headers(req.headers);
-  const newReqCookies = new RequestCookies(newReqHeaders);
-
-  for (const cookie of setCookies.getAll()) {
-    newReqCookies.set(cookie);
-  }
-
-  NextResponse.next({
-    request: { headers: newReqHeaders },
-  }).headers.forEach((value, key) => {
-    if (
-      key === "x-middleware-override-headers" ||
-      key.startsWith("x-middleware-request-")
-    ) {
-      res.headers.set(key, value);
-    }
-  });
-}
-
 export async function storeToken(
   token: JWTPayload,
   response: NextResponse,
@@ -182,11 +161,6 @@ export async function storeToken(
     expRefresh
   );
 
-  response.cookies.set(USID_KEY, token.usid as string, {
-    httpOnly: true,
-    expires: exp,
-  });
-
   response.cookies.set(SESSION_KEY, encSession, {
     httpOnly: true,
     expires: exp,
@@ -195,6 +169,41 @@ export async function storeToken(
   response.cookies.set(REFRESH_TOKEN_KEY, encRefresh, {
     httpOnly: true,
     expires: expRefresh,
+  });
+
+  response.cookies.set(
+    CUSTOMER_KEY,
+    JSON.stringify({
+      usid: token.usid,
+      customerId: token.customer_id,
+    }),
+    {
+      httpOnly: true,
+      expires: expRefresh,
+    }
+  );
+}
+
+export function applySetCookie(req: NextRequest, res: NextResponse): void {
+  // parse the outgoing Set-Cookie header
+  const setCookies = new ResponseCookies(res.headers);
+  // Build a new Cookie header for the request by adding the setCookies
+  const newReqHeaders = new Headers(req.headers);
+  const newReqCookies = new RequestCookies(newReqHeaders);
+
+  for (const cookie of setCookies.getAll()) {
+    newReqCookies.set(cookie);
+  }
+
+  NextResponse.next({
+    request: { headers: newReqHeaders },
+  }).headers.forEach((value, key) => {
+    if (
+      key === "x-middleware-override-headers" ||
+      key.startsWith("x-middleware-request-")
+    ) {
+      res.headers.set(key, value);
+    }
   });
 }
 
@@ -239,7 +248,7 @@ export async function getGuestUserAuthToken(request: NextRequest) {
 
       return response;
     } catch (error) {
-      removeSessionCookie()
+      removeSessionCookie();
     }
   }
 
