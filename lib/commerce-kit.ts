@@ -203,5 +203,6 @@ export async function createClient() {
     shopperPromotions: new ShopperPromotions(config),
     shopperSearch: new ShopperSearch(config),
     shopperSeo: new ShopperSeo(config),
+    session: session
   };
 }

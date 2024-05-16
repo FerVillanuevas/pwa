@@ -6,7 +6,7 @@ import { Suspense } from "react";
 
 import Link from "@/components/commerce/Link";
 import dynamic from "next/dynamic";
-import { createClient, getCustomerId } from "@/lib/commerce-kit";
+import { createClient, getUSID } from "@/lib/commerce-kit";
 const BasketSummary = dynamic(
   () => import("@/components/commerce/basket-summary"),
   {
@@ -16,12 +16,12 @@ const BasketSummary = dynamic(
 
 export default async function Page() {
   const client = await createClient();
-  const customerId = await getCustomerId();
+  const usid = await getUSID();
 
   const baskets = await client.shopperCustomers.getCustomerBaskets({
     parameters: {
       //@ts-ignore
-      customerId: customerId,
+      customerId: usid?.customerId,
     },
   });
 

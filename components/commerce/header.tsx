@@ -7,7 +7,7 @@ import dynamic from "next/dynamic";
 import LoginDialog from "./login-dialog";
 import CustomerMenu from "./customer-menu";
 import Logo from "./logo";
-import { createClient, getSession } from "@/lib/commerce-kit";
+import { createClient } from "@/lib/commerce-kit";
 
 const Cart = dynamic(() => import("./Cart"), {
   loading: () => <p>Loading...</p>,
@@ -15,13 +15,12 @@ const Cart = dynamic(() => import("./Cart"), {
 
 export default async function Header() {
   const client = await createClient();
-  const session = await getSession();
 
   const { categories } = await client.shopperProducts.getCategory({
     parameters: {
       id: "root",
       levels: 1,
-    }
+    },
   });
 
   const ids = categories?.flatMap((cat) => cat.id);
@@ -31,7 +30,7 @@ export default async function Header() {
       //@ts-ignore
       ids: ids?.join(),
       levels: 2,
-    }
+    },
   });
 
   return (
@@ -46,7 +45,7 @@ export default async function Header() {
           />
         </nav>
         <div className="flex items-center space-x-2 ">
-          {session.type === AuthTypes.Guest ? (
+          {client.session?.type === AuthTypes.Guest ? (
             <LoginDialog />
           ) : (
             <CustomerMenu />
