@@ -110,7 +110,9 @@ export async function decrypt<T>(input: string): Promise<T> {
 }
 
 export const removeSessionCookie = async () => {
-  /* await kv.del(REFRESH_TOKEN_KEY, SESSION_KEY); */
+  cookies().delete(REFRESH_TOKEN_KEY);
+  cookies().delete(SESSION_KEY);
+  cookies().delete(CUSTOMER_KEY);
 };
 
 export async function getToken() {
@@ -203,6 +205,6 @@ export async function createClient() {
     shopperPromotions: new ShopperPromotions(config),
     shopperSearch: new ShopperSearch(config),
     shopperSeo: new ShopperSeo(config),
-    session: session
+    session: session,
   };
 }

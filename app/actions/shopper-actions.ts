@@ -6,18 +6,10 @@ import {
   createClient,
   removeSessionCookie,
   getUSID,
-  AuthTypes,
-  getToken,
-  encrypt,
-  CUSTOMER_KEY,
-  USID_KEY,
-  SESSION_KEY,
-  REFRESH_TOKEN_KEY,
-  handleToken,
+  AuthTypes, handleToken
 } from "@/lib/commerce-kit";
 
 import { ShopperBasketsTypes, helpers } from "commerce-sdk-isomorphic";
-import { cookies } from "next/headers";
 
 export default async function loginAsB2C(formData: loginFormData) {
   const client = await createClient();
@@ -58,17 +50,21 @@ export async function getCustomer() {
   const client = await createClient();
   const usid = await getUSID();
 
-  try {
-    let customer = await client.shopperCustomers.getCustomer({
-      parameters: {
-        //@ts-ignore
-        customerId: usid?.customerId,
-      },
-    });
-    return customer;
-  } catch (error) {
-    removeSessionCookie();
+  if(client.session?.type === AuthTypes.Creadentials) {
+    try {
+      let customer = await client.shopperCustomers.getCustomer({
+        parameters: {
+          //@ts-ignore
+          customerId: usid?.customerId,
+        },
+      });
+      return customer;
+    } catch (error) {
+      removeSessionCookie();
+    }
   }
+
+
 }
 
 export async function setBasket() {
@@ -101,45 +97,3 @@ export async function setBasket() {
   return basket;
 }
 
-export const getGuestToken = async () => {
-  const token = await getToken();
-  const exp = Date.now() + 1800 * 1000;
-  const expRefresh = Date.now() + 2592000 * 1000;
-
-  const encSession = await encrypt(
-    {
-      access_token: token.access_token,
-      type: AuthTypes.Guest,
-    },
-    exp
-  );
-
-  const encRefresh = await encrypt(
-    {
-      refresh_token: token.refresh_token,
-      exp: 2592000,
-      type: AuthTypes.Guest,
-    },
-    expRefresh
-  );
-
-  cookies().set(CUSTOMER_KEY, token.customer_id as string, {
-    httpOnly: true,
-    expires: exp,
-  });
-
-  cookies().set(USID_KEY, token.usid as string, {
-    httpOnly: true,
-    expires: exp,
-  });
-
-  cookies().set(SESSION_KEY, encSession, {
-    httpOnly: true,
-    expires: exp,
-  });
-
-  cookies().set(REFRESH_TOKEN_KEY, encRefresh, {
-    httpOnly: true,
-    expires: expRefresh,
-  });
-};

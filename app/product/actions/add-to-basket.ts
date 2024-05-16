@@ -8,8 +8,7 @@ export default async function AddToBasketAction(
   product: any
 ) {
   const client = await createClient();
-
-  const basket = client.shopperBaskets.addItemToBasket({
+  const basket = await client.shopperBaskets.addItemToBasket({
     parameters: {
       basketId: basketId,
     },
@@ -21,8 +20,5 @@ export default async function AddToBasketAction(
       },
     ]
   });
-
-  revalidateTag('basket');
-  
   return basket;
 }

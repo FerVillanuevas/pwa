@@ -17,8 +17,8 @@ export default function CartAction({
   disabled,
   ...props
 }: ICartActionProps) {
-  const basket = store$.basket.get();
 
+  const basket = store$.basket.get();
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
@@ -26,18 +26,19 @@ export default function CartAction({
       const newBasket = await AddToBasketAction(basket.basketId!, product);
       return newBasket;
     },
-    onSuccess: async () => {
-      
-      await queryClient.invalidateQueries({
-        queryKey: ["basket"],
-      });
-
+    onSuccess: async (newBasket) => {
+      await queryClient.refetchQueries({
+        queryKey: ['basket']
+      })
       toast.success("Producct added", {
         action: {
           label: "Close",
           onClick: () => console.log("Close!"),
         },
       });
+    },
+    onError: (error) => {
+      console.log(error);
     },
   });
 
