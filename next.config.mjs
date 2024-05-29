@@ -1,5 +1,7 @@
+import BuilderDevTools from "@builder.io/dev-tools/next";
+
 /** @type {import('next').NextConfig} */
-const nextConfig = {
+const nextConfig = BuilderDevTools()({
   images: {
     remotePatterns: [
       {
@@ -7,7 +9,7 @@ const nextConfig = {
         hostname: "*.salesforce.com",
       },
     ],
-  }
-};
+  },
+});
 
 export default nextConfig;
